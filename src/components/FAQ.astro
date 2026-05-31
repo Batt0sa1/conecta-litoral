@@ -1,0 +1,72 @@
+---
+const preguntas = [
+  {
+    q: '¿La membresía tiene permanencia mínima o puedo darme de baja cuando quiera?',
+    a: '[Por completar — la fundación debe redactar la respuesta según sus políticas reales.]',
+  },
+  {
+    q: '¿Cómo pago y cómo confirmo mi inscripción?',
+    a: 'Por el momento el pago se realiza por transferencia bancaria a Banco Falabella. Al completar el formulario de inscripción te enviaremos los datos de transferencia por WhatsApp. Una vez confirmado el pago, recibirás la bienvenida oficial. En el futuro se integrará Flow / Webpay.',
+  },
+  {
+    q: '¿Qué pasará con los pagos cuando se integre Flow/Webpay?',
+    a: '[Por completar — indicar si habrá un proceso de migración, si los precios cambiarán, etc.]',
+  },
+  {
+    q: '¿Las asesorías tienen costo adicional o están incluidas en la membresía?',
+    a: '[Por completar — la fundación debe precisar si las asesorías son sin costo adicional para los miembros o si aplican condiciones.]',
+  },
+  {
+    q: '¿Quiénes pueden inscribirse? ¿Debo tener un emprendimiento formalizado?',
+    a: '[Por completar — indicar si se requiere o no formalización (inicio de actividades, patente, etc.) y si hay restricción por territorio.]',
+  },
+];
+---
+
+<section class="py-20 px-4 bg-white">
+  <div class="max-w-3xl mx-auto">
+    <h2 class="font-heading text-3xl sm:text-4xl font-bold text-primary text-center mb-4">Preguntas Frecuentes</h2>
+    <p class="text-center text-gray-500 mb-12 font-body">Todo lo que necesitas saber antes de unirte.</p>
+
+    <div class="space-y-3" id="faq-list">
+      {preguntas.map((p, i) => (
+        <div class="border border-gray-200 rounded-2xl overflow-hidden">
+          <button
+            class="faq-btn w-full flex items-center justify-between gap-4 px-6 py-5 text-left hover:bg-gray-50 transition-colors"
+            aria-expanded="false"
+            data-index={i}
+          >
+            <span class="font-heading text-sm font-semibold text-gray-800">{p.q}</span>
+            <svg class="faq-icon w-5 h-5 text-primary shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div class="faq-answer hidden px-6 pb-5">
+            <p class="font-body text-sm text-gray-500 leading-relaxed">{p.a}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll('.faq-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const answer = btn.nextElementSibling as HTMLElement;
+      const icon = btn.querySelector('.faq-icon') as HTMLElement;
+      const isOpen = !answer.classList.contains('hidden');
+
+      // close all
+      document.querySelectorAll('.faq-answer').forEach(a => a.classList.add('hidden'));
+      document.querySelectorAll('.faq-icon').forEach(i => i.classList.remove('rotate-180'));
+      document.querySelectorAll('.faq-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+
+      if (!isOpen) {
+        answer.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+</script>

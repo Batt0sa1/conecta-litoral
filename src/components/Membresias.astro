@@ -1,0 +1,183 @@
+---
+const beneficios = [
+  { label: 'Charlas y capacitaciones mensuales', emprende: true, impulsa: true },
+  { label: 'Asesorías profesionales (contabilidad, jurídica, finanzas, marketing, patente)', emprende: true, impulsa: true },
+  { label: 'Acceso a la comunidad de emprendedores', emprende: true, impulsa: true },
+  { label: 'Convenios y descuentos con empresas aliadas', emprende: true, impulsa: true },
+  { label: 'Info de fondos, oportunidades y novedades', emprende: true, impulsa: true },
+  { label: 'Vitrinas y espacios de exhibición', emprende: false, impulsa: true },
+  { label: 'Mayor difusión en redes y canales', emprende: false, impulsa: true },
+  { label: 'Prioridad en ferias, eventos y actividades', emprende: false, impulsa: true },
+  { label: 'Alianzas y oportunidades comerciales exclusivas', emprende: false, impulsa: true },
+];
+
+const generalBeneficios = [
+  'Red de apoyo y colaboración',
+  'Alianzas con empresas y municipios',
+  'Capacitación continua',
+  'Visibilidad para tu emprendimiento',
+  'Impulsamos el desarrollo de la comunidad',
+];
+---
+
+<section id="membresias" class="py-20 px-4 bg-white">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="font-heading text-3xl sm:text-4xl font-bold text-primary text-center mb-4">Membresías Fundador</h2>
+    <p class="text-center text-gray-500 mb-12 font-body max-w-2xl mx-auto">
+      Sé parte del movimiento que está transformando el litoral. Elige el plan que mejor se adapta a tu emprendimiento.
+    </p>
+
+    <!-- Plan comparison table -->
+    <div class="overflow-x-auto rounded-2xl shadow-lg mb-14">
+      <table class="w-full min-w-[540px] border-collapse">
+        <thead>
+          <tr>
+            <th class="bg-gray-50 px-6 py-5 text-left font-heading text-sm text-gray-500 font-semibold w-1/2">Beneficio</th>
+            <th class="bg-gray-50 px-6 py-5 text-center font-heading w-1/4">
+              <div class="text-primary text-base font-bold">EMPRENDE</div>
+              <div class="text-cta text-xl font-bold">$10.000<span class="text-sm text-gray-500 font-normal">/mes</span></div>
+              <div class="text-gray-400 text-xs font-normal mt-1">Para crecer, aprender y conectar.</div>
+            </th>
+            <th class="bg-primary px-6 py-5 text-center font-heading w-1/4 rounded-tr-2xl">
+              <div class="text-cta text-base font-bold">IMPULSA</div>
+              <div class="text-white text-xl font-bold">$20.000<span class="text-sm text-white/60 font-normal">/mes</span></div>
+              <div class="text-white/60 text-xs font-normal mt-1">Más visibilidad, más oportunidades.</div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {beneficios.map((b, i) => (
+            <tr class={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+              <td class="px-6 py-4 font-body text-sm text-gray-700">{b.label}</td>
+              <td class="px-6 py-4 text-center">
+                {b.emprende
+                  ? <span class="text-secondary font-bold text-lg">✓</span>
+                  : <span class="text-gray-300 text-lg">—</span>
+                }
+              </td>
+              <td class={`px-6 py-4 text-center ${i % 2 === 0 ? 'bg-primary/5' : 'bg-primary/10'}`}>
+                {b.impulsa
+                  ? <span class="text-secondary font-bold text-lg">✓</span>
+                  : <span class="text-gray-300 text-lg">—</span>
+                }
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- General benefits -->
+    <div class="bg-gray-50 rounded-2xl p-8 mb-14">
+      <h3 class="font-heading text-lg font-semibold text-primary text-center mb-6">Beneficios en ambos planes</h3>
+      <div class="flex flex-wrap justify-center gap-4">
+        {generalBeneficios.map(b => (
+          <span class="bg-white border border-secondary text-secondary text-sm font-medium px-4 py-2 rounded-full shadow-sm">
+            ✓ {b}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    <!-- Registration form -->
+    <div class="bg-primary rounded-2xl p-8 sm:p-10">
+      <h3 class="font-heading text-2xl font-bold text-white text-center mb-2">¡Inscríbete hoy!</h3>
+      <p class="text-white/70 text-sm text-center mb-8 font-body">Completa el formulario y te contactaremos con los datos de pago.</p>
+
+      <form id="form-membresia" class="grid sm:grid-cols-2 gap-5">
+        <div class="sm:col-span-2">
+          <label class="block text-white/80 text-sm font-medium mb-1.5" for="m-nombre">Nombre completo *</label>
+          <input required id="m-nombre" name="nombre" type="text" placeholder="Tu nombre"
+            class="w-full bg-white/10 border border-white/20 text-white placeholder-white/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cta" />
+        </div>
+        <div>
+          <label class="block text-white/80 text-sm font-medium mb-1.5" for="m-email">Email *</label>
+          <input required id="m-email" name="email" type="email" placeholder="tu@correo.cl"
+            class="w-full bg-white/10 border border-white/20 text-white placeholder-white/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cta" />
+        </div>
+        <div>
+          <label class="block text-white/80 text-sm font-medium mb-1.5" for="m-telefono">Teléfono / WhatsApp *</label>
+          <input required id="m-telefono" name="telefono" type="tel" placeholder="+56 9 1234 5678"
+            class="w-full bg-white/10 border border-white/20 text-white placeholder-white/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cta" />
+        </div>
+        <div>
+          <label class="block text-white/80 text-sm font-medium mb-1.5" for="m-emprendimiento">Nombre del emprendimiento *</label>
+          <input required id="m-emprendimiento" name="emprendimiento" type="text" placeholder="Nombre de tu negocio"
+            class="w-full bg-white/10 border border-white/20 text-white placeholder-white/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cta" />
+        </div>
+        <div>
+          <label class="block text-white/80 text-sm font-medium mb-1.5" for="m-plan">Plan elegido *</label>
+          <select required id="m-plan" name="plan"
+            class="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cta appearance-none">
+            <option value="" disabled selected class="text-gray-800">Selecciona un plan</option>
+            <option value="EMPRENDE - $10.000/mes" class="text-gray-800">EMPRENDE — $10.000/mes</option>
+            <option value="IMPULSA - $20.000/mes" class="text-gray-800">IMPULSA — $20.000/mes</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-white/80 text-sm font-medium mb-1.5" for="m-comuna">Comuna *</label>
+          <input required id="m-comuna" name="comuna" type="text" placeholder="Tu comuna"
+            class="w-full bg-white/10 border border-white/20 text-white placeholder-white/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cta" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-white/80 text-sm font-medium mb-1.5" for="m-mensaje">Mensaje (opcional)</label>
+          <textarea id="m-mensaje" name="mensaje" rows="3" placeholder="Cuéntanos algo de tu emprendimiento…"
+            class="w-full bg-white/10 border border-white/20 text-white placeholder-white/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cta resize-none"></textarea>
+        </div>
+        <div class="sm:col-span-2 flex items-start gap-3">
+          <input required id="m-consent" name="consent" type="checkbox" class="mt-1 accent-cta w-4 h-4 shrink-0" />
+          <label for="m-consent" class="text-white/70 text-xs leading-relaxed">
+            Acepto el tratamiento de mis datos personales conforme a la Ley 19.628 sobre Protección de la Vida Privada. Mis datos serán usados únicamente para la gestión de membresía y comunicaciones de Fundación Conecta Litoral.
+          </label>
+        </div>
+        <div class="sm:col-span-2">
+          <button type="submit" id="btn-membresia"
+            class="w-full bg-cta text-black font-heading font-bold py-3.5 rounded-full text-base hover:brightness-105 transition shadow-lg disabled:opacity-60">
+            Inscribirme ahora
+          </button>
+          <div id="msg-membresia" class="hidden mt-4 text-center text-sm font-medium rounded-xl px-4 py-3"></div>
+        </div>
+      </form>
+
+      <p class="text-white/50 text-xs text-center mt-6 font-body">
+        Pago temporal por transferencia a <strong class="text-white/70">Banco Falabella</strong>. Te enviaremos los datos por WhatsApp al confirmar tu inscripción.
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  const form = document.getElementById('form-membresia') as HTMLFormElement;
+  const btn = document.getElementById('btn-membresia') as HTMLButtonElement;
+  const msg = document.getElementById('msg-membresia') as HTMLDivElement;
+  const ENDPOINT = import.meta.env.PUBLIC_FORMSPREE_MEMBRESIA || 'https://formspree.io/f/XXXXXXXX';
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = 'Enviando…';
+    msg.className = 'hidden';
+
+    const data = new FormData(form);
+    try {
+      const res = await fetch(ENDPOINT, {
+        method: 'POST',
+        body: data,
+        headers: { Accept: 'application/json' },
+      });
+      if (res.ok) {
+        msg.className = 'mt-4 text-center text-sm font-medium rounded-xl px-4 py-3 bg-secondary/20 text-white';
+        msg.textContent = '¡Inscripción recibida! Te contactaremos pronto con los detalles de pago.';
+        form.reset();
+      } else {
+        throw new Error();
+      }
+    } catch {
+      msg.className = 'mt-4 text-center text-sm font-medium rounded-xl px-4 py-3 bg-red-500/20 text-red-200';
+      msg.textContent = 'Hubo un problema al enviar. Por favor intenta de nuevo o escríbenos por WhatsApp.';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Inscribirme ahora';
+    }
+  });
+</script>

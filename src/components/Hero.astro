@@ -1,0 +1,42 @@
+---
+const base = import.meta.env.BASE_URL;
+---
+
+<section class="bg-primary text-white py-24 px-4 text-center relative overflow-hidden">
+  <!-- Background decorative circles -->
+  <div class="absolute top-0 left-0 w-64 h-64 bg-secondary/10 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+  <div class="absolute bottom-0 right-0 w-96 h-96 bg-secondary/10 rounded-full translate-x-1/3 translate-y-1/3"></div>
+
+  <div class="relative max-w-3xl mx-auto">
+    <img src={`${base}images/logo.png`} alt="Conecta Litoral" class="h-24 w-auto mx-auto mb-6 drop-shadow-lg" />
+
+    <h1 class="font-heading text-4xl sm:text-5xl font-bold mb-4 leading-tight">
+      Conectando ideas,<br class="hidden sm:block" /> personas y territorios
+    </h1>
+
+    <p class="text-lg sm:text-xl text-white/80 mb-4 font-body">
+      Conectamos personas, talentos y oportunidades, generando impacto en las comunidades del litoral.
+    </p>
+
+    <p class="text-base text-secondary font-medium mb-10 font-body">
+      Juntos impulsamos tu negocio y fortalecemos nuestro litoral
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a
+        href="#membresias"
+        class="bg-cta text-black font-heading font-semibold px-8 py-3 rounded-full text-base hover:brightness-105 transition shadow-lg"
+      >
+        Súmate hoy
+      </a>
+      <a
+        href="https://wa.me/56927698014"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="border-2 border-secondary text-secondary font-heading font-semibold px-8 py-3 rounded-full text-base hover:bg-secondary hover:text-white transition"
+      >
+        Conversemos por WhatsApp
+      </a>
+    </div>
+  </div>
+</section>
