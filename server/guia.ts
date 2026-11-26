@@ -2,8 +2,10 @@
 // Almacenamiento: Cloudflare KV (binding GUIA).
 //   - clave "avisos"        → JSON con la lista completa de avisos
 //   - clave "foto:<uuid>"   → imagen (bytes), con metadata { tipo }
+//   - clave "carrusel"      → JSON con las diapositivas de la portada (si se editó desde el panel)
 import { idsCategorias } from '../src/data/categorias';
 import { limpiarCaracteristicas, type Caracteristicas } from '../src/data/caracteristicas';
+import type { Diapositiva } from '../src/data/carrusel';
 
 export interface Env {
   GUIA: KVNamespace;
@@ -139,6 +141,24 @@ export function validarAviso(
       publicado: body.publicado !== false,
     },
   };
+}
+
+// ---------- Carrusel de portada ----------
+
+const CLAVE_CARRUSEL = 'carrusel';
+
+/** El carrusel editado desde el panel, o null si se usa el predeterminado. */
+export async function leerCarrusel(env: Env): Promise<Diapositiva[] | null> {
+  const lista = await env.GUIA.get<Diapositiva[]>(CLAVE_CARRUSEL, 'json');
+  return Array.isArray(lista) && lista.length ? lista : null;
+}
+
+export async function guardarCarrusel(env: Env, diapositivas: Diapositiva[]): Promise<void> {
+  await env.GUIA.put(CLAVE_CARRUSEL, JSON.stringify(diapositivas));
+}
+
+export async function quitarCarrusel(env: Env): Promise<void> {
+  await env.GUIA.delete(CLAVE_CARRUSEL);
 }
 
 export async function borrarFotos(env: Env, ids: string[]): Promise<void> {

@@ -3,11 +3,16 @@
 // Habla con /api/admin/* (Pages Functions en functions/). Ingreso con la contraseña ADMIN_PASSWORD.
 import Layout from '../layouts/Layout.astro';
 import { categorias } from '../data/categorias';
+import { MAX_DIAPOSITIVAS } from '../data/carrusel';
 
 const base = import.meta.env.BASE_URL;
 const campo = 'bg-white border border-sky-200 text-gray-800 placeholder-gray-400 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40';
 const input = `w-full ${campo}`;
 const label = 'block text-azul text-sm font-medium mb-1.5';
+const pestanasPanel = [
+  { vista: 'lista', nombre: 'Avisos' },
+  { vista: 'carrusel', nombre: 'Carrusel de portada' },
+];
 ---
 
 <Layout title="Panel · Guía del Litoral" description="Panel de administración de la Guía del Litoral." noindex>
@@ -34,11 +39,19 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
         <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
           <div class="flex items-center gap-3 min-w-0">
             <img src={`${base}images/logo.png`} alt="" class="h-10 w-auto" />
-            <span class="font-heading font-bold text-primary truncate">Panel de la Guía</span>
+            <span class="font-heading font-bold text-primary truncate hidden sm:inline">Panel</span>
           </div>
+          <nav class="flex gap-1 bg-sky-50 rounded-full p-1" aria-label="Secciones del panel">
+            {pestanasPanel.map(p => (
+              <button type="button" data-ir-vista={p.vista} aria-current={p.vista === 'lista' ? 'page' : undefined}
+                class="whitespace-nowrap text-xs sm:text-sm font-heading font-semibold px-3 sm:px-4 py-1.5 rounded-full text-azul aria-[current=page]:bg-primary aria-[current=page]:text-white">
+                {p.nombre}
+              </button>
+            ))}
+          </nav>
           <div class="flex items-center gap-2 shrink-0">
-            <a href={`${base}#guia`} target="_blank" class="hidden sm:inline text-sm text-secondary hover:underline">Ver sitio</a>
-            <button id="btn-salir" type="button" class="text-sm text-gray-500 hover:text-primary px-3 py-2">Salir</button>
+            <a href={`${base}#guia`} target="_blank" class="hidden md:inline text-sm text-secondary hover:underline">Ver sitio</a>
+            <button id="btn-salir" type="button" class="text-sm text-gray-500 hover:text-primary px-2 sm:px-3 py-2">Salir</button>
           </div>
         </div>
       </header>
@@ -156,6 +169,63 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
       </form>
     </section>
 
+    <!-- Carrusel de portada -->
+    <section id="vista-carrusel" class="hidden">
+      <header class="bg-white border-b border-sky-100 sticky top-0 z-20">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <img src={`${base}images/logo.png`} alt="" class="h-10 w-auto" />
+            <span class="font-heading font-bold text-primary truncate hidden sm:inline">Panel</span>
+          </div>
+          <nav class="flex gap-1 bg-sky-50 rounded-full p-1" aria-label="Secciones del panel">
+            {pestanasPanel.map(p => (
+              <button type="button" data-ir-vista={p.vista} aria-current={p.vista === 'carrusel' ? 'page' : undefined}
+                class="whitespace-nowrap text-xs sm:text-sm font-heading font-semibold px-3 sm:px-4 py-1.5 rounded-full text-azul aria-[current=page]:bg-primary aria-[current=page]:text-white">
+                {p.nombre}
+              </button>
+            ))}
+          </nav>
+          <a href={`${base}#inicio`} target="_blank" class="hidden md:inline text-sm text-secondary hover:underline shrink-0">Ver portada</a>
+        </div>
+      </header>
+
+      <div class="max-w-5xl mx-auto px-4 py-8 pb-32">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
+          <div>
+            <h1 class="font-heading text-xl font-bold text-primary">Carrusel de portada</h1>
+            <p class="text-sm text-gray-500 mt-1 max-w-2xl">
+              Las imágenes que se ven al abrir el sitio. Cambia o agrega fotos, ordénalas y pulsa <strong>Guardar cambios</strong>.
+            </p>
+          </div>
+          <span id="carr-estado" class="self-start shrink-0 text-xs font-medium px-3 py-1 rounded-full"></span>
+        </div>
+
+        <div id="carr-lista" class="space-y-4"></div>
+
+        <label id="carr-agregar" class="mt-4 flex items-center justify-center gap-2 border-2 border-dashed border-primary/30 rounded-2xl py-6 text-primary font-medium text-sm cursor-pointer hover:bg-primary/5 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+          Agregar imagen
+          <input id="carr-agregar-input" type="file" accept="image/*" class="sr-only" />
+        </label>
+        <p class="text-xs text-gray-400 mt-2 text-center">Máximo {MAX_DIAPOSITIVAS} imágenes. Horizontales o verticales: siempre se muestran completas, sin recortar.</p>
+
+        <div class="mt-10 pt-6 border-t border-sky-100 text-center">
+          <button id="carr-restaurar" type="button" class="text-sm text-red-500 hover:underline">Restaurar el carrusel original</button>
+        </div>
+      </div>
+
+      <!-- Barra para guardar -->
+      <div class="fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-sky-100">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+          <p id="carr-aviso" class="text-sm text-gray-500" role="status"></p>
+          <div class="flex gap-2 shrink-0">
+            <button id="carr-descartar" type="button" class="px-4 py-2.5 rounded-full text-sm text-gray-500 hover:text-primary disabled:opacity-40" disabled>Descartar</button>
+            <button id="carr-guardar" type="button" class="bg-primary text-white font-heading font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-azul transition disabled:opacity-40" disabled>Guardar cambios</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <div id="aviso-flotante" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-azul text-white text-sm px-5 py-3 rounded-full shadow-lg" role="status"></div>
   </div>
 </Layout>
@@ -163,6 +233,7 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
 <script>
   import { categorias } from '../data/categorias';
   import { camposPorCategoria, type Campo, type Caracteristicas } from '../data/caracteristicas';
+  import { ENLACES_INTERNOS, MAX_DIAPOSITIVAS, type Diapositiva } from '../data/carrusel';
 
   interface Aviso {
     id: string;
@@ -186,7 +257,7 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
   const CALIDADES = [0.82, 0.74, 0.66, 0.58];
 
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
-  const vistas = { login: $('vista-login'), lista: $('vista-lista'), editor: $('vista-editor') };
+  const vistas = { login: $('vista-login'), lista: $('vista-lista'), editor: $('vista-editor'), carrusel: $('vista-carrusel') };
   const nombreCategoria = Object.fromEntries(categorias.map(c => [c.id, c.nombre]));
 
   let avisos: Aviso[] = [];
@@ -546,10 +617,10 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
    * Achica la foto a LADO_MAX px, la convierte a WebP/JPEG y baja la calidad si sigue pesando mucho.
    * Al redibujarla en un canvas se descartan los metadatos (EXIF), incluida la ubicación GPS del celular.
    */
-  async function prepararFoto(archivo: File): Promise<Blob> {
+  async function prepararFoto(archivo: File, lado = LADO_MAX, pesoObjetivo = PESO_OBJETIVO): Promise<Blob> {
     const bitmap = await createImageBitmap(archivo).catch(() => null);
     if (!bitmap) throw new Error(`No se pudo leer "${archivo.name}". Prueba con una foto JPG o PNG.`);
-    const escala = Math.min(1, LADO_MAX / Math.max(bitmap.width, bitmap.height));
+    const escala = Math.min(1, lado / Math.max(bitmap.width, bitmap.height));
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(bitmap.width * escala);
     canvas.height = Math.round(bitmap.height * escala);
@@ -566,7 +637,7 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
     for (const calidad of CALIDADES) {
       const blob = await aBlob(canvas, tipo, calidad);
       if (blob && (!mejor || blob.size < mejor.size)) mejor = blob;
-      if (mejor && mejor.size <= PESO_OBJETIVO) break;
+      if (mejor && mejor.size <= pesoObjetivo) break;
     }
     if (!mejor) throw new Error(`No se pudo procesar "${archivo.name}".`);
     return mejor;
@@ -646,6 +717,229 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
       boton.disabled = false;
       boton.textContent = 'Guardar aviso';
     }
+  });
+
+  // ---------- Carrusel de portada ----------
+
+  const CARR_LADO = 1600; // px: las fotos del carrusel se ven grandes
+  const CARR_PESO = 450 * 1024;
+  let carrusel: Diapositiva[] = [];
+  let carruselGuardado: Diapositiva[] = [];
+  let carrPersonalizado = false;
+  let carrSubiendo = 0;
+  const carrSucio = () => JSON.stringify(carrusel) !== JSON.stringify(carruselGuardado);
+
+  function actualizarBarraCarrusel() {
+    const sucio = carrSucio();
+    $<HTMLButtonElement>('carr-guardar').disabled = !sucio || carrSubiendo > 0;
+    $<HTMLButtonElement>('carr-descartar').disabled = !sucio;
+    $('carr-aviso').textContent = carrSubiendo > 0 ? 'Subiendo foto…' : sucio ? 'Tienes cambios sin guardar.' : 'Todo guardado.';
+    const estado = $('carr-estado');
+    estado.textContent = carrPersonalizado ? 'Carrusel personalizado' : 'Carrusel original';
+    estado.className = `self-start shrink-0 text-xs font-medium px-3 py-1 rounded-full ${carrPersonalizado ? 'bg-secondary/15 text-azul' : 'bg-gray-100 text-gray-500'}`;
+    $('carr-agregar').classList.toggle('hidden', carrusel.length + carrSubiendo >= MAX_DIAPOSITIVAS);
+    $<HTMLButtonElement>('carr-restaurar').classList.toggle('hidden', !carrPersonalizado);
+  }
+
+  async function abrirCarrusel() {
+    try {
+      const r = await api<{ diapositivas: Diapositiva[]; personalizado: boolean }>('/api/admin/carrusel');
+      carrusel = structuredClone(r.diapositivas);
+      carruselGuardado = structuredClone(r.diapositivas);
+      carrPersonalizado = r.personalizado;
+      pintarCarrusel();
+      mostrar('carrusel');
+    } catch (err) {
+      if (!(err instanceof SesionExpirada)) alert((err as Error).message);
+    }
+  }
+
+  function campoCarrusel(etiqueta: string, control: HTMLElement, ayuda?: string) {
+    const caja = el('label', 'block');
+    caja.append(el('span', 'block text-azul text-sm font-medium mb-1', etiqueta), control);
+    if (ayuda) caja.append(el('span', 'block text-xs text-gray-400 mt-1', ayuda));
+    return caja;
+  }
+
+  const CLASE_CARR = 'w-full bg-white border border-sky-200 text-gray-800 placeholder-gray-400 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40';
+
+  function tarjetaDiapositiva(d: Diapositiva, i: number) {
+    const tarjeta = el('div', 'bg-white rounded-2xl border border-sky-100 shadow-sm p-4 sm:p-5 grid sm:grid-cols-[260px_1fr] gap-5');
+
+    // Imagen + acciones
+    const izq = el('div', 'space-y-3');
+    const marco = el('div', 'relative aspect-[16/10] rounded-xl overflow-hidden bg-sky-50');
+    const img = el('img', 'w-full h-full object-contain');
+    img.src = d.imagen;
+    img.alt = '';
+    marco.append(img, el('span', 'absolute top-2 left-2 bg-primary text-white text-xs font-semibold px-2 py-0.5 rounded-full', String(i + 1)));
+    const cambiar = el('label', 'block text-center text-sm text-primary font-medium border border-primary/30 rounded-full py-1.5 cursor-pointer hover:bg-primary/5', 'Cambiar foto');
+    const inputFoto = el('input', 'sr-only');
+    inputFoto.type = 'file';
+    inputFoto.accept = 'image/*';
+    inputFoto.addEventListener('change', async () => {
+      const archivo = inputFoto.files?.[0];
+      if (!archivo) return;
+      const nueva = await subirFotoCarrusel(archivo);
+      if (nueva) { carrusel[i].imagen = nueva; pintarCarrusel(); }
+    });
+    cambiar.append(inputFoto);
+    izq.append(marco, cambiar);
+
+    // Datos
+    const der = el('div', 'flex flex-col gap-4');
+    const alt = el('textarea', `${CLASE_CARR} resize-y`);
+    alt.rows = 2;
+    alt.maxLength = 300;
+    alt.value = d.alt;
+    alt.placeholder = 'Ej: Grupo de vecinos frente al letrero de Algarrobo';
+    alt.addEventListener('input', () => { carrusel[i].alt = alt.value; actualizarBarraCarrusel(); });
+
+    // Enlace al hacer clic: sección/página del sitio u otro enlace
+    const destino = el('select', CLASE_CARR);
+    const opciones: [string, string][] = [['', 'Ninguno (solo imagen)'], ...ENLACES_INTERNOS.map(e => [e.valor, e.nombre] as [string, string]), ['otro', 'Otro enlace (sitio web)…']];
+    opciones.forEach(([v, n]) => { const o = el('option', '', n); o.value = v; destino.append(o); });
+    const esInterno = ENLACES_INTERNOS.some(e => e.valor === d.enlace);
+    destino.value = !d.enlace ? '' : esInterno ? d.enlace : 'otro';
+    const otro = el('input', CLASE_CARR);
+    otro.type = 'text';
+    otro.maxLength = 200;
+    otro.placeholder = 'Ej: www.municipalidad.cl';
+    otro.value = esInterno ? '' : d.enlace;
+    otro.classList.toggle('hidden', destino.value !== 'otro');
+    otro.addEventListener('input', () => { carrusel[i].enlace = otro.value; actualizarBarraCarrusel(); });
+    destino.addEventListener('change', () => {
+      otro.classList.toggle('hidden', destino.value !== 'otro');
+      carrusel[i].enlace = destino.value === 'otro' ? otro.value : destino.value;
+      actualizarBarraCarrusel();
+    });
+    const cajaDestino = el('div', 'space-y-2');
+    cajaDestino.append(destino, otro);
+
+    // Orden y quitar
+    const acciones = el('div', 'flex flex-wrap gap-2 mt-auto');
+    const accion = (texto: string, etiqueta: string, fn: () => void, deshabilitado = false, extra = '') => {
+      const b = el('button', `text-sm px-4 py-1.5 rounded-full border border-sky-200 text-azul hover:bg-sky-50 disabled:opacity-30 ${extra}`, texto);
+      b.type = 'button';
+      b.title = etiqueta;
+      b.setAttribute('aria-label', etiqueta);
+      b.disabled = deshabilitado;
+      b.addEventListener('click', fn);
+      return b;
+    };
+    const intercambiar = (j: number) => { [carrusel[i], carrusel[j]] = [carrusel[j], carrusel[i]]; pintarCarrusel(); };
+    acciones.append(
+      accion('↑ Subir', 'Subir', () => intercambiar(i - 1), i === 0),
+      accion('↓ Bajar', 'Bajar', () => intercambiar(i + 1), i === carrusel.length - 1),
+      accion('Quitar', 'Quitar imagen', () => {
+        if (carrusel.length === 1) return alert('El carrusel necesita al menos una imagen.');
+        if (confirm('¿Quitar esta imagen del carrusel? Se aplica al guardar los cambios.')) { carrusel.splice(i, 1); pintarCarrusel(); }
+      }, false, 'text-red-500 border-red-200 hover:bg-red-50 sm:ml-auto'),
+    );
+
+    der.append(
+      campoCarrusel('Descripción de la imagen', alt,
+        'No se muestra en el sitio: la leen las personas con discapacidad visual y Google. Si la imagen es un afiche, escribe aquí su texto.'),
+      campoCarrusel('Al hacer clic en la imagen, lleva a', cajaDestino, 'Opcional.'),
+      acciones,
+    );
+    tarjeta.append(izq, der);
+    return tarjeta;
+  }
+
+  function pintarCarrusel() {
+    $('carr-lista').replaceChildren(...carrusel.map(tarjetaDiapositiva));
+    for (let k = 0; k < carrSubiendo; k++) {
+      $('carr-lista').append(el('div', 'bg-white rounded-2xl border border-dashed border-sky-200 p-6 text-center text-sm text-gray-400 animate-pulse', 'Subiendo foto…'));
+    }
+    actualizarBarraCarrusel();
+  }
+
+  async function subirFotoCarrusel(archivo: File): Promise<string | null> {
+    carrSubiendo++;
+    actualizarBarraCarrusel();
+    try {
+      const blob = await prepararFoto(archivo, CARR_LADO, CARR_PESO);
+      const { id } = await api<{ id: string }>('/api/admin/fotos', { method: 'POST', headers: { 'Content-Type': blob.type }, body: blob });
+      notificar(`Foto optimizada: ${formatoPeso(archivo.size)} → ${formatoPeso(blob.size)}`);
+      return `/api/fotos/${id}`;
+    } catch (err) {
+      if (!(err instanceof SesionExpirada)) alert((err as Error).message);
+      return null;
+    } finally {
+      carrSubiendo--;
+      actualizarBarraCarrusel();
+    }
+  }
+
+  $<HTMLInputElement>('carr-agregar-input').addEventListener('change', async e => {
+    const input = e.currentTarget as HTMLInputElement;
+    const archivo = input.files?.[0];
+    input.value = '';
+    if (!archivo || carrusel.length >= MAX_DIAPOSITIVAS) return;
+    pintarCarrusel();
+    const imagen = await subirFotoCarrusel(archivo);
+    if (imagen) {
+      carrusel.push({ imagen, alt: '', enlace: '' });
+    }
+    pintarCarrusel();
+  });
+
+  $('carr-guardar').addEventListener('click', async () => {
+    const boton = $<HTMLButtonElement>('carr-guardar');
+    boton.disabled = true;
+    boton.textContent = 'Guardando…';
+    try {
+      const r = await api<{ diapositivas: Diapositiva[]; personalizado: boolean }>('/api/admin/carrusel', {
+        method: 'PUT',
+        body: JSON.stringify({ diapositivas: carrusel }),
+      });
+      carrusel = structuredClone(r.diapositivas);
+      carruselGuardado = structuredClone(r.diapositivas);
+      carrPersonalizado = r.personalizado;
+      pintarCarrusel();
+      notificar('Carrusel guardado. Ya se ve en la portada.');
+    } catch (err) {
+      if (!(err instanceof SesionExpirada)) alert((err as Error).message);
+    } finally {
+      boton.textContent = 'Guardar cambios';
+      actualizarBarraCarrusel();
+    }
+  });
+
+  $('carr-descartar').addEventListener('click', () => {
+    if (!confirm('¿Descartar los cambios que no has guardado?')) return;
+    carrusel = structuredClone(carruselGuardado);
+    pintarCarrusel();
+  });
+
+  $('carr-restaurar').addEventListener('click', async () => {
+    if (!confirm('¿Volver al carrusel original? Se borrarán las fotos que subiste para el carrusel.')) return;
+    try {
+      const r = await api<{ diapositivas: Diapositiva[]; personalizado: boolean }>('/api/admin/carrusel', { method: 'DELETE' });
+      carrusel = structuredClone(r.diapositivas);
+      carruselGuardado = structuredClone(r.diapositivas);
+      carrPersonalizado = r.personalizado;
+      pintarCarrusel();
+      notificar('Se restauró el carrusel original.');
+    } catch (err) {
+      if (!(err instanceof SesionExpirada)) alert((err as Error).message);
+    }
+  });
+
+  // Pestañas del panel: Avisos / Carrusel de portada.
+  document.querySelectorAll<HTMLButtonElement>('[data-ir-vista]').forEach(b => {
+    b.addEventListener('click', () => {
+      if (b.dataset.irVista === 'carrusel') {
+        abrirCarrusel();
+      } else {
+        if (!vistas.carrusel.classList.contains('hidden') && carrSucio() && !confirm('Tienes cambios del carrusel sin guardar. ¿Salir igual?')) return;
+        cargarLista();
+      }
+    });
+  });
+  window.addEventListener('beforeunload', e => {
+    if (!vistas.carrusel.classList.contains('hidden') && carrSucio()) e.preventDefault();
   });
 
   // ---------- Inicio ----------

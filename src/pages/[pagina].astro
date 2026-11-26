@@ -1,0 +1,72 @@
+---
+// Páginas de "La Fundación": /quienes-somos/, /que-hacemos/, /pilares/, /valores/.
+// El contenido de cada una está en su componente; títulos y textos de cabecera en src/data/paginas.ts.
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import QuienesSomos from '../components/QuienesSomos.astro';
+import QueHacemos from '../components/QueHacemos.astro';
+import Pilares from '../components/Pilares.astro';
+import Valores from '../components/Valores.astro';
+import { paginasFundacion, type PaginaFundacion } from '../data/paginas';
+
+export function getStaticPaths() {
+  return paginasFundacion.map(p => ({ params: { pagina: p.slug }, props: { pagina: p } }));
+}
+
+const { pagina } = Astro.props as { pagina: PaginaFundacion };
+const base = import.meta.env.BASE_URL;
+const contenido = { 'quienes-somos': QuienesSomos, 'que-hacemos': QueHacemos, pilares: Pilares, valores: Valores } as const;
+const Contenido = contenido[pagina.slug as keyof typeof contenido];
+const otras = paginasFundacion.filter(p => p.slug !== pagina.slug);
+---
+
+<Layout title={pagina.titulo} description={pagina.descripcion}>
+  <Navbar />
+  <main>
+    <header class="relative overflow-hidden bg-gradient-to-b from-sky-50 to-white px-4 pt-10 pb-12 text-center">
+      <div class="absolute -top-24 -left-24 w-72 h-72 bg-secondary/15 rounded-full" aria-hidden="true"></div>
+      <div class="absolute -bottom-40 -right-24 w-80 h-80 bg-lila/10 rounded-full" aria-hidden="true"></div>
+      <div class="relative max-w-3xl mx-auto">
+        <nav aria-label="Ruta" class="text-xs text-gray-400 mb-4">
+          <a href={base} class="hover:text-primary hover:underline">Inicio</a>
+          <span aria-hidden="true"> / </span>
+          <span>La Fundación</span>
+          <span aria-hidden="true"> / </span>
+          <span aria-current="page" class="text-azul">{pagina.nombre}</span>
+        </nav>
+        <h1 class="font-heading text-3xl sm:text-4xl font-bold text-primary mb-3">{pagina.nombre}</h1>
+        <p class="font-body text-gray-500">{pagina.bajada}</p>
+      </div>
+    </header>
+
+    <section class="px-4 py-12 sm:py-16 bg-sky-50/60">
+      <div class="max-w-6xl mx-auto">
+        <Contenido />
+      </div>
+    </section>
+
+    <section class="px-4 py-14 bg-white" aria-labelledby="mas-fundacion">
+      <div class="max-w-6xl mx-auto">
+        <h2 id="mas-fundacion" class="font-heading text-xl font-bold text-primary text-center mb-6">Conoce más de la fundación</h2>
+        <div class="grid sm:grid-cols-3 gap-4 mb-10">
+          {otras.map(p => (
+            <a href={`${base}${p.slug}/`}
+              class="group block bg-white rounded-2xl border border-sky-100 shadow-sm p-5 hover:shadow-md hover:border-secondary transition">
+              <span class="block font-heading font-semibold text-primary mb-1 group-hover:text-azul">{p.nombre} →</span>
+              <span class="block text-sm text-gray-500">{p.bajada}</span>
+            </a>
+          ))}
+        </div>
+        <div class="text-center">
+          <a href={`${base}#guia`} class="inline-block bg-primary text-white font-heading font-semibold px-7 py-3 rounded-full hover:bg-azul transition shadow-sm">
+            Ver la Guía del Litoral
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+  <WhatsAppButton />
+</Layout>
