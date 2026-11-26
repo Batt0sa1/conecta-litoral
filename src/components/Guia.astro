@@ -8,7 +8,7 @@ const avisos = categorias.map(c => ({
   categoria: c.id,
   nombre: c.ejemplo,
   sector: 'Algarrobo y litoral',
-  descripcion: 'Próximamente publicaremos aquí avisos verificados por la fundación. ¡Sé de los primeros!',
+  descripcion: 'Próximamente publicaremos aquí avisos revisados por la fundación. ¡Sé de los primeros!',
 }));
 
 const nombreCategoria = Object.fromEntries(categorias.map(c => [c.id, c.nombre]));
@@ -27,7 +27,7 @@ const iconoCategoria = Object.fromEntries(categorias.map(c => [c.id, c.icon]));
 
     <!-- Sellos de confianza -->
     <div class="flex flex-wrap justify-center gap-3 mb-12">
-      {['Avisos verificados por la fundación', 'Contacto directo con el dueño', 'Emprendedores del litoral'].map(t => (
+      {['Avisos revisados por la fundación', 'Contacto directo por WhatsApp', 'Negocios y personas del litoral'].map(t => (
         <span class="inline-flex items-center gap-2 bg-white border border-sky-200 text-azul text-sm font-medium px-4 py-2 rounded-full shadow-sm">
           <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
           {t}
