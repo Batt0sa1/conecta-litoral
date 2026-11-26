@@ -1,7 +1,7 @@
 ---
 // Guía del Litoral: directorio de alojamientos, restaurantes, servicios y emprendimientos.
 // Los avisos reales se administran en /admin y se cargan desde /api/avisos al abrir la página.
-// Mientras no haya avisos publicados (o si la API no responde) se muestran las tarjetas "Próximamente".
+// Las categorías sin avisos publicados (o todas, si la API no responde) muestran una tarjeta "Próximamente".
 import { categorias } from '../data/categorias';
 
 const avisos = categorias.map(c => ({
@@ -317,7 +317,12 @@ const iconoCategoria = Object.fromEntries(categorias.map(c => [c.id, c.icon]));
       const avisos: AvisoPublico[] = await res.json();
       if (!Array.isArray(avisos) || avisos.length === 0) return;
       hayAvisosReales = true;
-      contenedor.replaceChildren(...avisos.map(tarjeta));
+      // Primero los avisos reales; después, las tarjetas de ejemplo solo de las categorías
+      // que todavía no tienen avisos (van desapareciendo a medida que llegan avisos reales).
+      const conAvisos = new Set(avisos.map(a => a.categoria));
+      const ejemplos = [...contenedor.querySelectorAll<HTMLElement>('[data-ejemplo]')]
+        .filter(e => !conAvisos.has(e.dataset.categoria || ''));
+      contenedor.replaceChildren(...avisos.map(tarjeta), ...ejemplos);
       aplicar(filtroActual);
     } catch {
       // Sin API (por ejemplo en `astro dev`): se quedan las tarjetas de ejemplo.

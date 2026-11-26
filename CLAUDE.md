@@ -19,7 +19,7 @@ Astro static site (`output: 'static'`) plus Cloudflare Pages Functions (`functio
 
 **Page composition** (`src/pages/index.astro`): imports and stacks all section components in order. Each section is its own self-contained `.astro` file under `src/components/`. No shared state between components.
 
-**Guía del Litoral**: categories live in `src/data/categorias.ts` (shared by the site, `/admin` and the API). `Guia.astro` renders "Próximamente" example cards at build time, then fetches `/api/avisos` in the browser (only once the section is within ~800px of the viewport) and replaces them with the real listings if there are any. To save Functions quota (100k requests/day on the free plan, shared across the account), only each listing's cover photo gets a `src` up front; the rest load when the visitor moves through the gallery.
+**Guía del Litoral**: categories live in `src/data/categorias.ts` (shared by the site, `/admin` and the API). `Guia.astro` renders "Próximamente" example cards at build time, then fetches `/api/avisos` in the browser (only once the section is within ~800px of the viewport) and puts the real listings first; the example card is kept only for categories that still have no published listing. To save Functions quota (100k requests/day on the free plan, shared across the account), only each listing's cover photo gets a `src` up front; the rest load when the visitor moves through the gallery.
 
 **Guía API** (`functions/api/`, shared code in `server/guia.ts`):
 - Storage is Cloudflare KV (binding `GUIA`): key `avisos` holds the full JSON list; `foto:<uuid>` holds each photo's bytes (metadata `tipo`). R2 and D1 are not enabled on the account.
