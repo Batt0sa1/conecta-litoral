@@ -19,13 +19,13 @@ Astro static site (`output: 'static'`) plus Cloudflare Pages Functions (`functio
 
 **Page composition** (`src/pages/index.astro`): imports and stacks all section components in order. Each section is its own self-contained `.astro` file under `src/components/`. No shared state between components.
 
-**Guía del Litoral**: categories live in `src/data/categorias.ts` (shared by the site, `/admin` and the API). `Guia.astro` renders "Próximamente" example cards at build time, then fetches `/api/avisos` in the browser and replaces them with the real listings if there are any.
+**Guía del Litoral**: categories live in `src/data/categorias.ts` (shared by the site, `/admin` and the API). `Guia.astro` renders "Próximamente" example cards at build time, then fetches `/api/avisos` in the browser (only once the section is within ~800px of the viewport) and replaces them with the real listings if there are any. To save Functions quota (100k requests/day on the free plan, shared across the account), only each listing's cover photo gets a `src` up front; the rest load when the visitor moves through the gallery.
 
 **Guía API** (`functions/api/`, shared code in `server/guia.ts`):
 - Storage is Cloudflare KV (binding `GUIA`): key `avisos` holds the full JSON list; `foto:<uuid>` holds each photo's bytes (metadata `tipo`). R2 and D1 are not enabled on the account.
 - Public: `GET /api/avisos` (published only), `GET /api/fotos/:id`.
 - Admin (`/api/admin/*`, guarded by `_middleware.ts`): login/logout/sesion, CRUD on avisos, `POST /api/admin/fotos` (raw image body). Session = HMAC-signed cookie keyed by the `ADMIN_PASSWORD` secret (changing the password logs everyone out). Writes require the `X-Requested-With: panel` header.
-- The panel resizes photos to 1600px JPEG in the browser before upload (max 8 per listing, 3 MB each).
+- The panel optimizes photos in the browser before upload: max 1280px, WebP (JPEG fallback), quality stepped down until ≤350 KB, EXIF/GPS stripped by the canvas redraw. Max 8 per listing; the API rejects files over 3 MB.
 - Local test: `npx astro build --base / && npx wrangler pages dev dist --kv GUIA --binding ADMIN_PASSWORD=test`.
 
 **Layout** (`src/layouts/Layout.astro`): wraps the page with `<html>`, SEO meta tags and Google Fonts. Pass `noindex` to keep a page out of search engines.
