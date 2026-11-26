@@ -17,6 +17,8 @@ export interface Aviso {
   sector: string;
   descripcion: string;
   whatsapp: string; // solo dígitos, ej: 56912345678 ('' si no tiene)
+  web: string; // URL http(s) completa ('' si no tiene)
+  instagram: string; // solo el usuario, sin @ ('' si no tiene)
   fotos: string[]; // ids de foto (sin el prefijo "foto:")
   caracteristicas: Caracteristicas; // campos propios de la categoría (src/data/caracteristicas.ts)
   publicado: boolean;
@@ -71,6 +73,38 @@ export function normalizarWhatsapp(v: unknown): string {
   return d.slice(0, 15);
 }
 
+/**
+ * Sitio web: acepta "mirestaurant.cl", "www.mirestaurant.cl" o la URL completa.
+ * Solo http/https (nunca javascript:, data:, etc.). Devuelve '' si viene vacío y null si no es válido.
+ */
+export function normalizarWeb(v: unknown): string | null {
+  let t = typeof v === 'string' ? v.trim() : '';
+  if (!t) return '';
+  if (t.length > 200 || /\s/.test(t)) return null;
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(t)) t = 'https://' + t.replace(/^\/+/, '');
+  try {
+    const url = new URL(t);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+    if (!url.hostname.includes('.') || url.username || url.password) return null;
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Instagram: acepta "@usuario", "usuario" o el enlace "instagram.com/usuario".
+ * Devuelve solo el usuario ('' si viene vacío) o null si no es válido.
+ */
+export function normalizarInstagram(v: unknown): string | null {
+  let t = typeof v === 'string' ? v.trim() : '';
+  if (!t) return '';
+  const enlace = t.match(/instagram\.com\/([^/?#\s]+)/i);
+  if (enlace) t = enlace[1];
+  t = t.replace(/^@/, '').replace(/\/$/, '');
+  return /^[A-Za-z0-9._]{1,30}$/.test(t) ? t.toLowerCase() : null;
+}
+
 /** Valida los datos que manda el panel. Devuelve el mensaje de error o los campos limpios. */
 export function validarAviso(
   body: any,
@@ -81,6 +115,8 @@ export function validarAviso(
   const sector = texto(body.sector, 120);
   const descripcion = texto(body.descripcion, 2000);
   const whatsapp = normalizarWhatsapp(body.whatsapp);
+  const web = normalizarWeb(body.web);
+  const instagram = normalizarInstagram(body.instagram);
   const fotos = Array.isArray(body.fotos)
     ? body.fotos.filter((f: unknown) => typeof f === 'string' && /^[0-9a-f-]{36}$/.test(f))
     : [];
@@ -90,13 +126,15 @@ export function validarAviso(
   if (!sector) return { error: 'Falta el sector o comuna.' };
   if (!descripcion) return { error: 'Falta la descripción.' };
   if (whatsapp && whatsapp.length < 8) return { error: 'El WhatsApp no parece válido.' };
+  if (web === null) return { error: 'El sitio web no parece válido. Ejemplo: www.mirestaurant.cl' };
+  if (instagram === null) return { error: 'El Instagram no parece válido. Ejemplo: @mirestaurant' };
   if (fotos.length > MAX_FOTOS) return { error: `Máximo ${MAX_FOTOS} fotos por aviso.` };
   const c = limpiarCaracteristicas(categoria, body.caracteristicas);
   if ('error' in c) return { error: c.error };
 
   return {
     datos: {
-      categoria, nombre, sector, descripcion, whatsapp, fotos,
+      categoria, nombre, sector, descripcion, whatsapp, web, instagram, fotos,
       caracteristicas: c.caracteristicas,
       publicado: body.publicado !== false,
     },

@@ -141,6 +141,8 @@ const iconoCategoria = Object.fromEntries(categorias.map(c => [c.id, c.icon]));
     sector: string;
     descripcion: string;
     whatsapp: string;
+    web?: string;
+    instagram?: string;
     fotos: string[];
     caracteristicas?: Caracteristicas;
   }
@@ -274,14 +276,34 @@ const iconoCategoria = Object.fromEntries(categorias.map(c => [c.id, c.icon]));
       mas.append(resumen, lista);
       cuerpo.append(mas);
     }
+    // Contacto: WhatsApp, sitio web e Instagram (los que tenga el aviso).
+    const enlaces: HTMLAnchorElement[] = [];
+    const enlace = (texto: string, href: string, clases: string, titulo?: string) => {
+      const a = el('a', `inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-full transition ${clases}`, texto);
+      a.href = href;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer nofollow ugc'; // enlaces de terceros
+      if (titulo) a.title = titulo;
+      enlaces.push(a);
+    };
     if (aviso.whatsapp) {
-      const pie = el('div', 'mt-5 pt-4 border-t border-gray-100');
-      const link = el('a', 'inline-flex items-center gap-2 bg-secondary/10 text-azul text-sm font-medium px-4 py-2 rounded-full hover:bg-secondary/20 transition', 'Contactar por WhatsApp →');
       const mensaje = `Hola, vi tu aviso "${aviso.nombre}" en la Guía del Litoral de Conecta Litoral.`;
-      link.href = `https://wa.me/${encodeURIComponent(aviso.whatsapp)}?text=${encodeURIComponent(mensaje)}`;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      pie.append(link);
+      enlace('WhatsApp', `https://wa.me/${encodeURIComponent(aviso.whatsapp)}?text=${encodeURIComponent(mensaje)}`,
+        'bg-secondary/10 text-azul hover:bg-secondary/20');
+    }
+    // La API solo entrega URLs http(s) ya validadas; se revisa igual antes de usarla como enlace.
+    if (aviso.web && /^https?:\/\//i.test(aviso.web)) {
+      let dominio = aviso.web;
+      try { dominio = new URL(aviso.web).hostname.replace(/^www\./, ''); } catch { /* se deja tal cual */ }
+      enlace('Sitio web ↗', aviso.web, 'bg-primary/10 text-primary hover:bg-primary/20', dominio);
+    }
+    if (aviso.instagram) {
+      enlace('Instagram ↗', `https://www.instagram.com/${encodeURIComponent(aviso.instagram)}/`,
+        'bg-pink-50 text-pink-600 hover:bg-pink-100', `@${aviso.instagram}`);
+    }
+    if (enlaces.length) {
+      const pie = el('div', 'mt-5 pt-4 border-t border-gray-100 flex flex-wrap gap-2');
+      pie.append(...enlaces);
       cuerpo.append(pie);
     }
     art.append(galeria(aviso, cat), cuerpo);

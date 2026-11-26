@@ -102,6 +102,17 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
             <input id="e-whatsapp" name="whatsapp" type="tel" maxlength="20" placeholder="+56 9 1234 5678" class={input} />
             <p class="text-xs text-gray-400 mt-1">Los visitantes verán un botón para escribirle directo. Déjalo vacío si no quieren contacto.</p>
           </div>
+          <div class="grid sm:grid-cols-2 gap-5">
+            <div>
+              <label for="e-web" class={label}>Sitio web</label>
+              <input id="e-web" name="web" type="text" inputmode="url" autocomplete="off" maxlength="200" placeholder="Ej: www.mirestaurant.cl" class={input} />
+            </div>
+            <div>
+              <label for="e-instagram" class={label}>Instagram</label>
+              <input id="e-instagram" name="instagram" type="text" autocomplete="off" maxlength="120" placeholder="Ej: @mirestaurant" class={input} />
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 -mt-2">Opcionales. Se pueden pegar tal cual: el enlace completo o solo el nombre.</p>
         </div>
 
         <div id="caract-card" class="hidden bg-white rounded-2xl border border-sky-100 shadow-sm p-6">
@@ -160,6 +171,8 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
     sector: string;
     descripcion: string;
     whatsapp: string;
+    web?: string;
+    instagram?: string;
     fotos: string[];
     caracteristicas?: Caracteristicas;
     publicado: boolean;
@@ -460,6 +473,8 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
     campo('nombre').value = a?.nombre || '';
     campo('descripcion').value = a?.descripcion || '';
     campo('whatsapp').value = a?.whatsapp ? `+${a.whatsapp}` : '';
+    campo('web').value = a?.web || '';
+    campo('instagram').value = a?.instagram ? `@${a.instagram}` : '';
     $<HTMLInputElement>('e-publicado').checked = a ? a.publicado : true;
     pintarCaracteristicas(a?.categoria || '', a?.caracteristicas || {});
     fotos = a ? [...a.fotos] : [];
@@ -604,6 +619,8 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
       nombre: campo('nombre').value,
       descripcion: campo('descripcion').value,
       whatsapp: campo('whatsapp').value,
+      web: campo('web').value,
+      instagram: campo('instagram').value,
       fotos,
       caracteristicas: leerCaracteristicas(),
       publicado: $<HTMLInputElement>('e-publicado').checked,
