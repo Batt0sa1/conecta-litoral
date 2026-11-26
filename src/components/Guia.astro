@@ -15,7 +15,7 @@ const nombreCategoria = Object.fromEntries(categorias.map(c => [c.id, c.nombre])
 const iconoCategoria = Object.fromEntries(categorias.map(c => [c.id, c.icon]));
 ---
 
-<section id="guia" class="py-20 px-4 bg-gradient-to-b from-white to-sky-50"
+<section id="guia" class="py-20 px-4 bg-gradient-to-b from-white to-sky-50 scroll-mt-16"
   data-categorias={JSON.stringify(categorias.map(({ id, nombre, icon }) => ({ id, nombre, icon })))}>
   <div class="max-w-6xl mx-auto">
     <p class="text-center text-secondary font-heading font-semibold text-sm uppercase tracking-wider mb-2">Nuevo</p>
@@ -35,17 +35,17 @@ const iconoCategoria = Object.fromEntries(categorias.map(c => [c.id, c.icon]));
       ))}
     </div>
 
-    <!-- Categorías / filtros -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-10" role="tablist" aria-label="Categorías de la guía">
+    <!-- Filtros por categoría (los accesos grandes con íconos están debajo del carrusel) -->
+    <div class="flex flex-wrap justify-center gap-2 mb-10" role="group" aria-label="Filtrar por categoría">
       <button type="button" data-filtro="todos" aria-pressed="true"
-        class="guia-filtro col-span-2 sm:col-span-3 lg:col-span-6 justify-self-center px-5 py-2 rounded-full text-sm font-heading font-semibold border transition">
+        class="guia-filtro shrink-0 inline-flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-full text-sm font-heading font-semibold border border-sky-200 bg-white text-azul transition hover:border-primary aria-pressed:bg-primary aria-pressed:border-primary aria-pressed:text-white">
         Ver todo
       </button>
       {categorias.map(c => (
         <button type="button" data-filtro={c.id} aria-pressed="false"
-          class="guia-filtro flex flex-col items-center gap-2 text-center bg-white rounded-2xl p-4 border transition hover:shadow-md">
-          <span class="text-secondary" set:html={c.icon} />
-          <span class="font-heading text-sm font-semibold text-azul leading-tight">{c.nombre}</span>
+          class="guia-filtro shrink-0 inline-flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-full text-sm font-heading font-semibold border border-sky-200 bg-white text-azul transition hover:border-primary aria-pressed:bg-primary aria-pressed:border-primary aria-pressed:text-white [&_svg]:w-4 [&_svg]:h-4">
+          <span set:html={c.icon} aria-hidden="true" />
+          {c.nombre}
         </button>
       ))}
     </div>
@@ -159,17 +159,7 @@ const iconoCategoria = Object.fromEntries(categorias.map(c => [c.id, c.icon]));
     filtroActual = filtro;
     filtros.forEach(b => {
       const activo = b.dataset.filtro === filtro;
-      b.setAttribute('aria-pressed', String(activo));
-      b.classList.toggle('border-primary', activo);
-      b.classList.toggle('ring-2', activo);
-      b.classList.toggle('ring-primary/30', activo);
-      b.classList.toggle('border-sky-100', !activo);
-      if (b.dataset.filtro === 'todos') {
-        b.classList.toggle('bg-primary', activo);
-        b.classList.toggle('text-white', activo);
-        b.classList.toggle('bg-white', !activo);
-        b.classList.toggle('text-primary', !activo);
-      }
+      b.setAttribute('aria-pressed', String(activo)); // el estilo activo lo da la clase aria-pressed:
     });
     let visibles = 0;
     contenedor.querySelectorAll<HTMLElement>('.guia-aviso').forEach(a => {

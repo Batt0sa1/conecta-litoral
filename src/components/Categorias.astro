@@ -1,0 +1,35 @@
+---
+// Accesos rápidos a la Guía del Litoral, debajo del carrusel.
+// Cada botón baja a la Guía y aplica el filtro de su categoría (usa los filtros de Guia.astro).
+import { categorias } from '../data/categorias';
+---
+
+<section aria-labelledby="categorias-titulo" class="px-4 pb-16 pt-4 bg-white">
+  <div class="max-w-6xl mx-auto">
+    <h2 id="categorias-titulo" class="font-heading text-2xl sm:text-3xl font-bold text-primary text-center mb-2">¿Qué estás buscando?</h2>
+    <p class="text-center text-gray-500 font-body mb-8">Explora la Guía del Litoral por categoría.</p>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+      {categorias.map(c => (
+        <a href="#guia" data-ir-categoria={c.id}
+          class="group flex flex-col items-center gap-3 text-center bg-white rounded-2xl p-5 border border-sky-100 shadow-sm hover:shadow-md hover:border-secondary transition">
+          <span class="flex items-center justify-center w-14 h-14 rounded-full bg-sky-50 text-secondary group-hover:bg-secondary group-hover:text-white transition" set:html={c.icon} />
+          <span class="font-heading text-sm font-semibold text-primary leading-tight">{c.nombre}</span>
+        </a>
+      ))}
+    </div>
+
+    <p class="text-center mt-6">
+      <a href="#guia" data-ir-categoria="todos" class="text-azul font-medium text-sm hover:underline">Ver toda la guía →</a>
+    </p>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLAnchorElement>('[data-ir-categoria]').forEach(a => {
+    a.addEventListener('click', () => {
+      // Aplica el filtro en la Guía; el enlace (#guia) se encarga de bajar hasta ella.
+      document.querySelector<HTMLButtonElement>(`.guia-filtro[data-filtro="${a.dataset.irCategoria}"]`)?.click();
+    });
+  });
+</script>

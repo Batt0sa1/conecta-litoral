@@ -17,7 +17,7 @@ No test suite is configured. `playwright` is installed but has no test files or 
 
 Astro static site (`output: 'static'`) plus Cloudflare Pages Functions (`functions/`) for the Guía del Litoral API. Pages: `/` (landing) and `/admin` (Guía admin panel, `noindex`).
 
-**Page composition** (`src/pages/index.astro`): imports and stacks all section components in order. Each section is its own self-contained `.astro` file under `src/components/`. No shared state between components.
+**Page composition** (`src/pages/index.astro`): Carrusel → Categorias → Guia → Fundacion → Asesorias → Galeria → Contacto. Each section is its own `.astro` file under `src/components/`. `Fundacion.astro` shows `QuienesSomos`, `QueHacemos`, `Pilares` and `Valores` as tabs (those four render panel content only, no `<section>`); `#quienes-somos`, `#que-hacemos`, `#pilares`, `#valores` open their tab. `Categorias.astro` (big icon buttons under the carousel) filters the Guía by clicking the matching `.guia-filtro` chip. The carousel slides are an array in `Carrusel.astro`; current photos are 320×320, so they sit next to the text instead of full-width.
 
 **Guía del Litoral**: categories live in `src/data/categorias.ts` (shared by the site, `/admin` and the API). `Guia.astro` renders "Próximamente" example cards at build time, then fetches `/api/avisos` in the browser (only once the section is within ~800px of the viewport) and puts the real listings first; the example card is kept only for categories that still have no published listing. To save Functions quota (100k requests/day on the free plan, shared across the account), only each listing's cover photo gets a `src` up front; the rest load when the visitor moves through the gallery.
 
@@ -36,7 +36,8 @@ Astro static site (`output: 'static'`) plus Cloudflare Pages Functions (`functio
 
 | Token | Value | Usage |
 |---|---|---|
-| `text-primary` / `bg-primary` | `#7B4FC4` (lila) | Headings, primary buttons |
+| `text-primary` / `bg-primary` | `#14285A` (azul marino) | Predominant color: headings, primary buttons, active tabs/filters |
+| `text-lila` / `bg-lila` | `#7B4FC4` (lila) | Accents (carousel decoration, Visión card) |
 | `text-azul` / `bg-azul` | `#1F5FBF` (blue) | Subheadings, body links, button hover |
 | `text-secondary` / `bg-secondary` | `#00A8C6` (celeste) | Icons, checkmarks, accents |
 | `text-cta` / `bg-cta` | `#F5C400` (gold) | Unused: the foundation asked for white backgrounds with celeste, blue and lila only |
