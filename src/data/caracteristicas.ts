@@ -89,7 +89,6 @@ export const camposPorCategoria: Record<string, Campo[]> = {
     { ...HORARIO },
     { id: 'venta', etiqueta: 'Formas de venta', tipo: 'multi', destacado: true,
       opciones: ['Local físico', 'Feria', 'Venta online', 'Despacho a domicilio'] },
-    { id: 'redes', etiqueta: 'Instagram o web', tipo: 'texto', maxLargo: 80, placeholder: 'Ej: @mi_emprendimiento' },
     { id: 'pagos', etiqueta: 'Formas de pago', tipo: 'multi', opciones: PAGOS },
   ],
   turismo: [
