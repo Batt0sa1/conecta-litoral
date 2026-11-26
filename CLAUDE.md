@@ -43,7 +43,7 @@ Astro static site (`output: 'static'`) plus Cloudflare Pages Functions (`functio
 
 ## Form Submission Pattern
 
-The "Publica tu aviso" form in the Guía uses the same no-backend pattern: on `submit`, serialize `FormData` into a WhatsApp message string and open `https://wa.me/56927698014?text=...` in a new tab. The foundation handles requests over WhatsApp and then publishes them from `/admin`. The contact form posts to Formspree (`PUBLIC_FORMSPREE_CONTACTO`). The Ley 19.628 consent checkbox is `required` on both forms.
+The "Publica tu aviso" form in the Guía uses the same no-backend pattern: on `submit`, serialize `FormData` into a WhatsApp message string and open `https://wa.me/56927698014?text=...` in a new tab. The foundation handles requests over WhatsApp and then publishes them from `/admin`. Its Ley 19.628 consent checkbox is `required`. The Contacto section has no form: it links straight to WhatsApp with a prefilled greeting.
 
 ## Assets
 
