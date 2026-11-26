@@ -198,14 +198,22 @@ const iconoCategoria = Object.fromEntries(categorias.map(c => [c.id, c.icon]));
       return caja;
     }
     const pista = el('div', 'h-full flex overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden');
-    aviso.fotos.forEach((f, i) => {
+    // Solo la portada lleva `src` (y con lazy: se pide al acercarse a la pantalla).
+    // Las demás fotos se piden recién cuando la persona desliza la galería, para no gastar cuota de la API.
+    const imgs = aviso.fotos.map((f, i) => {
       const img = el('img', 'h-full w-full shrink-0 snap-center object-cover');
-      img.src = `/api/fotos/${encodeURIComponent(f)}`;
+      img.dataset.src = `/api/fotos/${encodeURIComponent(f)}`;
       img.alt = `${aviso.nombre} — foto ${i + 1} de ${aviso.fotos.length}`;
       img.loading = 'lazy';
       img.decoding = 'async';
-      pista.append(img);
+      return img;
     });
+    const cargarFoto = (i: number) => {
+      const img = imgs[i];
+      if (img && !img.src) img.src = img.dataset.src!;
+    };
+    cargarFoto(0);
+    pista.append(...imgs);
     caja.append(pista);
     if (aviso.fotos.length > 1) {
       const contador = el('span', 'absolute bottom-2 right-2 bg-black/55 text-white text-xs px-2 py-0.5 rounded-full', `1 / ${aviso.fotos.length}`);
@@ -213,11 +221,19 @@ const iconoCategoria = Object.fromEntries(categorias.map(c => [c.id, c.icon]));
         const b = el('button', `absolute top-1/2 -translate-y-1/2 ${dir < 0 ? 'left-2' : 'right-2'} w-8 h-8 rounded-full bg-white/85 text-primary font-bold shadow hover:bg-white`, simbolo);
         b.type = 'button';
         b.setAttribute('aria-label', etiqueta);
-        b.addEventListener('click', () => pista.scrollBy({ left: dir * pista.clientWidth, behavior: 'smooth' }));
+        b.addEventListener('click', () => {
+          const destino = Math.round(pista.scrollLeft / pista.clientWidth) + dir;
+          cargarFoto(destino);
+          pista.scrollBy({ left: dir * pista.clientWidth, behavior: 'smooth' });
+        });
         return b;
       };
       pista.addEventListener('scroll', () => {
-        contador.textContent = `${Math.round(pista.scrollLeft / pista.clientWidth) + 1} / ${aviso.fotos.length}`;
+        const actual = Math.round(pista.scrollLeft / pista.clientWidth);
+        contador.textContent = `${actual + 1} / ${aviso.fotos.length}`;
+        // Al deslizar con el dedo, pide la foto que aparece y la siguiente.
+        cargarFoto(actual);
+        cargarFoto(actual + 1);
       }, { passive: true });
       caja.append(boton(-1, 'Foto anterior', '‹'), boton(1, 'Foto siguiente', '›'), contador);
     }
@@ -262,7 +278,19 @@ const iconoCategoria = Object.fromEntries(categorias.map(c => [c.id, c.icon]));
       // Sin API (por ejemplo en `astro dev`): se quedan las tarjetas de ejemplo.
     }
   }
-  cargarAvisos();
+  // Los avisos se piden recién cuando la Guía está por aparecer en pantalla:
+  // quien abre el sitio y no baja hasta la Guía no gasta cuota de la API.
+  if ('IntersectionObserver' in window) {
+    const observador = new IntersectionObserver(entradas => {
+      if (entradas.some(e => e.isIntersecting)) {
+        observador.disconnect();
+        cargarAvisos();
+      }
+    }, { rootMargin: '800px 0px' });
+    observador.observe(seccion);
+  } else {
+    cargarAvisos();
+  }
 
   const form = document.getElementById('form-aviso') as HTMLFormElement | null;
   form?.addEventListener('submit', (e) => {
