@@ -54,7 +54,7 @@ Images live in `public/images/`. The filenames are:
 
 ## Deployment
 
-**Primary:** Cloudflare Pages project `conecta-litoral`, connected to GitHub: every push to `main` deploys to `https://conecta-litoral.pages.dev`, other branches get preview URLs. Build command `npx astro build --base /`, output `dist`. Bindings: KV `GUIA` (`conecta-litoral-guia` in production, `conecta-litoral-guia-preview` in previews) and secret `ADMIN_PASSWORD`. Custom domain `conectalitoral.cl` is not connected yet. The old direct-upload project `conectalitoral` is unused.
+**Primary:** Cloudflare Pages project `conecta-litoral`, connected to GitHub: every push to `main` deploys to `https://conecta-litoral.pages.dev`, other branches get preview URLs. Build command `npx astro build --base /`, output `dist`. Bindings: KV `GUIA` (`conecta-litoral-guia` in production, `conecta-litoral-guia-preview` in previews) and secret `ADMIN_PASSWORD`. Custom domain `conectalitoral.cl` is not connected yet. The old direct-upload project `conectalitoral` was deleted (2026-11-26).
 
 **GitHub Pages** (`.github/workflows/deploy.yml`) still builds with `base: '/conecta-litoral/'` from `astro.config.mjs`; it serves the static site only (no API, so the Guía shows example cards and `/admin` does not work).
 
