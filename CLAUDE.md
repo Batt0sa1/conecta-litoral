@@ -25,7 +25,7 @@ Astro static site (`output: 'static'`) plus Cloudflare Pages Functions (`functio
 - Storage is Cloudflare KV (binding `GUIA`): key `avisos` holds the full JSON list; `foto:<uuid>` holds each photo's bytes (metadata `tipo`). R2 and D1 are not enabled on the account.
 - Public: `GET /api/avisos` (published only), `GET /api/fotos/:id`.
 - Admin (`/api/admin/*`, guarded by `_middleware.ts`): login/logout/sesion, CRUD on avisos, `POST /api/admin/fotos` (raw image body). Session = HMAC-signed cookie keyed by the `ADMIN_PASSWORD` secret (changing the password logs everyone out). Writes require the `X-Requested-With: panel` header.
-- The panel resizes photos to 1600px JPEG in the browser before upload (max 8 per listing, 3 MB each).
+- The panel optimizes photos in the browser before upload: max 1280px, WebP (JPEG fallback), quality stepped down until ≤350 KB, EXIF/GPS stripped by the canvas redraw. Max 8 per listing; the API rejects files over 3 MB.
 - Local test: `npx astro build --base / && npx wrangler pages dev dist --kv GUIA --binding ADMIN_PASSWORD=test`.
 
 **Layout** (`src/layouts/Layout.astro`): wraps the page with `<html>`, SEO meta tags and Google Fonts. Pass `noindex` to keep a page out of search engines.

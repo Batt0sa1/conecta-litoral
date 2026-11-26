@@ -159,7 +159,10 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
   }
 
   const MAX_FOTOS = 8;
-  const LADO_MAX = 1600; // px: las fotos se achican antes de subirlas
+  // Optimización de fotos en el navegador, antes de subirlas:
+  const LADO_MAX = 1280; // px del lado más largo (en el sitio se ven a ~400px; sobra para pantallas retina)
+  const PESO_OBJETIVO = 350 * 1024; // si pesa más, se baja la calidad hasta llegar a esto
+  const CALIDADES = [0.82, 0.74, 0.66, 0.58];
 
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const vistas = { login: $('vista-login'), lista: $('vista-lista'), editor: $('vista-editor') };
@@ -396,7 +399,25 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
     $('fotos-agregar').classList.toggle('hidden', fotos.length + subiendo >= MAX_FOTOS);
   }
 
-  /** Achica la imagen a LADO_MAX px y la convierte a JPEG para que pese poco. */
+  const aBlob = (canvas: HTMLCanvasElement, tipo: string, calidad: number) =>
+    new Promise<Blob | null>(ok => canvas.toBlob(ok, tipo, calidad));
+
+  /** Formato de salida: WebP si el navegador sabe generarlo (pesa ~30% menos), si no JPEG. */
+  let formatoSalida: Promise<string> | null = null;
+  function elegirFormato() {
+    formatoSalida ??= (async () => {
+      const c = document.createElement('canvas');
+      c.width = c.height = 2;
+      const b = await aBlob(c, 'image/webp', 0.8);
+      return b?.type === 'image/webp' ? 'image/webp' : 'image/jpeg';
+    })();
+    return formatoSalida;
+  }
+
+  /**
+   * Achica la foto a LADO_MAX px, la convierte a WebP/JPEG y baja la calidad si sigue pesando mucho.
+   * Al redibujarla en un canvas se descartan los metadatos (EXIF), incluida la ubicación GPS del celular.
+   */
   async function prepararFoto(archivo: File): Promise<Blob> {
     const bitmap = await createImageBitmap(archivo).catch(() => null);
     if (!bitmap) throw new Error(`No se pudo leer "${archivo.name}". Prueba con una foto JPG o PNG.`);
@@ -404,12 +425,27 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(bitmap.width * escala);
     canvas.height = Math.round(bitmap.height * escala);
-    canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.fillStyle = '#ffffff'; // fondo blanco para PNG con transparencia
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     bitmap.close();
-    return new Promise((ok, mal) =>
-      canvas.toBlob(b => (b ? ok(b) : mal(new Error('No se pudo procesar la foto.'))), 'image/jpeg', 0.82),
-    );
+
+    const tipo = await elegirFormato();
+    let mejor: Blob | null = null;
+    for (const calidad of CALIDADES) {
+      const blob = await aBlob(canvas, tipo, calidad);
+      if (blob && (!mejor || blob.size < mejor.size)) mejor = blob;
+      if (mejor && mejor.size <= PESO_OBJETIVO) break;
+    }
+    if (!mejor) throw new Error(`No se pudo procesar "${archivo.name}".`);
+    return mejor;
   }
+
+  const formatoPeso = (bytes: number) =>
+    bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1).replace('.', ',')} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 
   $<HTMLInputElement>('fotos-input').addEventListener('change', async e => {
     const input = e.currentTarget as HTMLInputElement;
@@ -422,10 +458,11 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
         const blob = await prepararFoto(archivo);
         const { id } = await api<{ id: string }>('/api/admin/fotos', {
           method: 'POST',
-          headers: { 'Content-Type': 'image/jpeg' },
+          headers: { 'Content-Type': blob.type },
           body: blob,
         });
         fotos.push(id);
+        notificar(`Foto optimizada: ${formatoPeso(archivo.size)} → ${formatoPeso(blob.size)}`);
       } catch (err) {
         if (!(err instanceof SesionExpirada)) alert((err as Error).message);
       } finally {
