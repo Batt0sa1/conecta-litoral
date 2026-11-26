@@ -4,8 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#7B4FC4',   // lila
+        primary: '#14285A',   // azul marino (color predominante)
         azul: '#1F5FBF',      // azul
+        lila: '#7B4FC4',      // lila (acento)
         secondary: '#00A8C6', // celeste
         cta: '#F5C400',
       },
