@@ -104,6 +104,12 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
           </div>
         </div>
 
+        <div id="caract-card" class="hidden bg-white rounded-2xl border border-sky-100 shadow-sm p-6">
+          <h2 class="font-heading font-semibold text-azul">Características</h2>
+          <p class="text-xs text-gray-400 mb-5">Cambian según la categoría y se muestran en el aviso. Los campos con * son obligatorios; el resto, si no aplica, déjalo vacío.</p>
+          <div id="caract" class="grid sm:grid-cols-2 gap-5"></div>
+        </div>
+
         <div class="bg-white rounded-2xl border border-sky-100 shadow-sm p-6">
           <div class="flex items-center justify-between gap-3 mb-1">
             <h2 class="font-heading font-semibold text-azul">Fotos</h2>
@@ -145,6 +151,7 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
 
 <script>
   import { categorias } from '../data/categorias';
+  import { camposPorCategoria, type Campo, type Caracteristicas } from '../data/caracteristicas';
 
   interface Aviso {
     id: string;
@@ -154,6 +161,7 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
     descripcion: string;
     whatsapp: string;
     fotos: string[];
+    caracteristicas?: Caracteristicas;
     publicado: boolean;
     actualizado: string;
   }
@@ -338,6 +346,110 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
   const form = $<HTMLFormElement>('form-editor');
   const campo = (n: string) => form.elements.namedItem(n) as HTMLInputElement;
 
+  // ---------- Características según la categoría ----------
+
+  const CLASE_CAMPO = 'w-full bg-white border border-sky-200 text-gray-800 placeholder-gray-400 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40';
+
+  function controlCampo(c: Campo, valor: unknown): HTMLElement {
+    const idInput = `c-${c.id}`;
+    const caja = el('div', c.tipo === 'multi' ? 'sm:col-span-2' : '');
+    caja.dataset.campo = c.id;
+    const titulo = el('label', 'block text-azul text-sm font-medium mb-1.5', c.etiqueta + (c.requerido ? ' *' : ''));
+
+    if (c.tipo === 'si_no') {
+      const fila = el('label', 'flex items-center gap-3 cursor-pointer sm:mt-7');
+      const check = el('input', 'accent-primary w-5 h-5 shrink-0');
+      check.type = 'checkbox';
+      check.id = idInput;
+      check.checked = valor === true;
+      fila.append(check, el('span', 'text-sm text-azul font-medium', c.etiqueta));
+      caja.append(fila);
+    } else if (c.tipo === 'multi') {
+      titulo.removeAttribute('for');
+      caja.append(titulo);
+      const chips = el('div', 'flex flex-wrap gap-2');
+      const elegidas = Array.isArray(valor) ? valor : [];
+      c.opciones!.forEach(o => {
+        const chip = el('label', 'cursor-pointer');
+        const check = el('input', 'peer sr-only');
+        check.type = 'checkbox';
+        check.value = o;
+        check.checked = elegidas.includes(o);
+        chip.append(check, el('span',
+          'inline-block select-none px-3 py-1.5 rounded-full border border-sky-200 text-sm text-gray-600 transition peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40',
+          o));
+        chips.append(chip);
+      });
+      caja.append(chips);
+    } else {
+      titulo.setAttribute('for', idInput);
+      caja.append(titulo);
+      let control: HTMLInputElement | HTMLSelectElement;
+      if (c.tipo === 'opciones') {
+        control = el('select', CLASE_CAMPO);
+        const vacia = el('option', '', c.requerido ? 'Elige una opción' : 'Sin especificar');
+        vacia.value = '';
+        control.append(vacia, ...c.opciones!.map(o => {
+          const op = el('option', '', o);
+          op.value = o;
+          return op;
+        }));
+        control.value = typeof valor === 'string' && c.opciones!.includes(valor) ? valor : '';
+      } else {
+        control = el('input', CLASE_CAMPO);
+        if (c.tipo === 'numero') {
+          control.type = 'number';
+          control.inputMode = 'numeric';
+          control.step = '1';
+          if (c.min !== undefined) control.min = String(c.min);
+          if (c.max !== undefined) control.max = String(c.max);
+          if (c.unidad) control.placeholder = `Cantidad de ${c.unidad[1]}`;
+        } else {
+          control.type = 'text';
+          control.maxLength = c.maxLargo ?? 120;
+          if (c.placeholder) control.placeholder = c.placeholder;
+        }
+        control.value = valor === undefined || valor === null ? '' : String(valor);
+      }
+      control.id = idInput;
+      caja.append(control);
+    }
+    if (c.ayuda) caja.append(el('p', 'text-xs text-gray-400 mt-1', c.ayuda));
+    return caja;
+  }
+
+  let categoriaPintada = ''; // categoría de los campos que están en pantalla
+
+  function pintarCaracteristicas(categoria: string, valores: Caracteristicas) {
+    categoriaPintada = categoria;
+    const campos = camposPorCategoria[categoria] || [];
+    $('caract-card').classList.toggle('hidden', campos.length === 0);
+    $('caract').replaceChildren(...campos.map(c => controlCampo(c, valores[c.id])));
+  }
+
+  function leerCaracteristicas(): Caracteristicas {
+    const valores: Caracteristicas = {};
+    for (const c of camposPorCategoria[categoriaPintada] || []) {
+      const caja = $('caract').querySelector<HTMLElement>(`[data-campo="${c.id}"]`);
+      if (!caja) continue;
+      if (c.tipo === 'multi') {
+        const elegidas = [...caja.querySelectorAll<HTMLInputElement>('input:checked')].map(i => i.value);
+        if (elegidas.length) valores[c.id] = elegidas;
+      } else if (c.tipo === 'si_no') {
+        if ($<HTMLInputElement>(`c-${c.id}`).checked) valores[c.id] = true;
+      } else {
+        const v = $<HTMLInputElement>(`c-${c.id}`).value.trim();
+        if (v) valores[c.id] = c.tipo === 'numero' ? Number(v) : v;
+      }
+    }
+    return valores;
+  }
+
+  // Al cambiar de categoría se conservan los datos que también existen en la nueva (ej: horario, formas de pago).
+  $('e-categoria').addEventListener('change', () => {
+    pintarCaracteristicas(campo('categoria').value, leerCaracteristicas());
+  });
+
   function abrirEditor(a: Aviso | null) {
     editando = a;
     form.reset();
@@ -349,6 +461,7 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
     campo('descripcion').value = a?.descripcion || '';
     campo('whatsapp').value = a?.whatsapp ? `+${a.whatsapp}` : '';
     $<HTMLInputElement>('e-publicado').checked = a ? a.publicado : true;
+    pintarCaracteristicas(a?.categoria || '', a?.caracteristicas || {});
     fotos = a ? [...a.fotos] : [];
     pintarFotos();
     mostrar('editor');
@@ -472,6 +585,10 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
     }));
   });
 
+  // Al corregir cualquier campo se oculta el mensaje de error anterior.
+  form.addEventListener('input', () => $('editor-error').classList.add('hidden'));
+  form.addEventListener('change', () => $('editor-error').classList.add('hidden'));
+
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const error = $('editor-error');
@@ -488,6 +605,7 @@ const label = 'block text-azul text-sm font-medium mb-1.5';
       descripcion: campo('descripcion').value,
       whatsapp: campo('whatsapp').value,
       fotos,
+      caracteristicas: leerCaracteristicas(),
       publicado: $<HTMLInputElement>('e-publicado').checked,
     };
     const boton = $<HTMLButtonElement>('btn-guardar');

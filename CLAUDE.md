@@ -25,6 +25,7 @@ Astro static site (`output: 'static'`) plus Cloudflare Pages Functions (`functio
 - Storage is Cloudflare KV (binding `GUIA`): key `avisos` holds the full JSON list; `foto:<uuid>` holds each photo's bytes (metadata `tipo`). R2 and D1 are not enabled on the account.
 - Public: `GET /api/avisos` (published only), `GET /api/fotos/:id`.
 - Admin (`/api/admin/*`, guarded by `_middleware.ts`): login/logout/sesion, CRUD on avisos, `POST /api/admin/fotos` (raw image body). Session = HMAC-signed cookie keyed by the `ADMIN_PASSWORD` secret (changing the password logs everyone out). Writes require the `X-Requested-With: panel` header.
+- Each category has its own characteristic fields (`src/data/caracteristicas.ts`: types `opciones`, `multi`, `numero`, `texto`, `si_no`; `requerido`, `destacado`). The panel builds the form from them, the API cleans them with `limpiarCaracteristicas` (unknown keys and out-of-range values are dropped, missing required fields are rejected), and the Guía shows `destacado` ones as tags and the rest under "Más detalles". Add a field by editing that file only.
 - The panel optimizes photos in the browser before upload: max 1280px, WebP (JPEG fallback), quality stepped down until ≤350 KB, EXIF/GPS stripped by the canvas redraw. Max 8 per listing; the API rejects files over 3 MB.
 - Local test: `npx astro build --base / && npx wrangler pages dev dist --kv GUIA --binding ADMIN_PASSWORD=test`.
 

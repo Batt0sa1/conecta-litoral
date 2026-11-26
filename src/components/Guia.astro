@@ -132,6 +132,8 @@ const iconoCategoria = Object.fromEntries(categorias.map(c => [c.id, c.icon]));
 </section>
 
 <script>
+  import { describirCaracteristicas, type Caracteristicas } from '../data/caracteristicas';
+
   interface AvisoPublico {
     id: string;
     categoria: string;
@@ -140,6 +142,7 @@ const iconoCategoria = Object.fromEntries(categorias.map(c => [c.id, c.icon]));
     descripcion: string;
     whatsapp: string;
     fotos: string[];
+    caracteristicas?: Caracteristicas;
   }
 
   const seccion = document.getElementById('guia') as HTMLElement;
@@ -249,8 +252,28 @@ const iconoCategoria = Object.fromEntries(categorias.map(c => [c.id, c.icon]));
       el('span', 'self-start border border-secondary text-secondary text-xs font-medium px-2.5 py-0.5 rounded-full mb-3', cat?.nombre || ''),
       el('h3', 'font-heading text-base font-bold text-azul leading-snug mb-1', aviso.nombre),
       el('p', 'text-xs text-primary font-medium mb-3', `📍 ${aviso.sector}`),
-      el('p', 'font-body text-gray-500 text-sm leading-relaxed flex-1 whitespace-pre-line', aviso.descripcion),
     );
+    const { destacadas, detalles } = describirCaracteristicas(aviso.categoria, aviso.caracteristicas);
+    if (destacadas.length) {
+      const chips = el('ul', 'flex flex-wrap gap-1.5 mb-3');
+      chips.setAttribute('aria-label', 'Características principales');
+      destacadas.forEach(t => chips.append(el('li', 'bg-sky-50 text-azul text-xs font-medium px-2.5 py-1 rounded-full', t)));
+      cuerpo.append(chips);
+    }
+    cuerpo.append(el('p', 'font-body text-gray-500 text-sm leading-relaxed flex-1 whitespace-pre-line', aviso.descripcion));
+    if (detalles.length) {
+      const mas = el('details', 'mt-4 group');
+      const resumen = el('summary', 'cursor-pointer select-none text-sm font-medium text-primary hover:underline list-none [&::-webkit-details-marker]:hidden');
+      resumen.append(el('span', 'group-open:hidden', `Más detalles (${detalles.length}) ▾`), el('span', 'hidden group-open:inline', 'Menos detalles ▴'));
+      const lista = el('dl', 'mt-3 space-y-2 text-sm');
+      detalles.forEach(d => {
+        const fila = el('div', '');
+        fila.append(el('dt', 'text-xs text-gray-400', d.etiqueta), el('dd', 'text-gray-700', d.valor));
+        lista.append(fila);
+      });
+      mas.append(resumen, lista);
+      cuerpo.append(mas);
+    }
     if (aviso.whatsapp) {
       const pie = el('div', 'mt-5 pt-4 border-t border-gray-100');
       const link = el('a', 'inline-flex items-center gap-2 bg-secondary/10 text-azul text-sm font-medium px-4 py-2 rounded-full hover:bg-secondary/20 transition', 'Contactar por WhatsApp →');

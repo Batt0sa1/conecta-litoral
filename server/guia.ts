@@ -3,6 +3,7 @@
 //   - clave "avisos"        → JSON con la lista completa de avisos
 //   - clave "foto:<uuid>"   → imagen (bytes), con metadata { tipo }
 import { idsCategorias } from '../src/data/categorias';
+import { limpiarCaracteristicas, type Caracteristicas } from '../src/data/caracteristicas';
 
 export interface Env {
   GUIA: KVNamespace;
@@ -17,6 +18,7 @@ export interface Aviso {
   descripcion: string;
   whatsapp: string; // solo dígitos, ej: 56912345678 ('' si no tiene)
   fotos: string[]; // ids de foto (sin el prefijo "foto:")
+  caracteristicas: Caracteristicas; // campos propios de la categoría (src/data/caracteristicas.ts)
   publicado: boolean;
   creado: string;
   actualizado: string;
@@ -89,9 +91,15 @@ export function validarAviso(
   if (!descripcion) return { error: 'Falta la descripción.' };
   if (whatsapp && whatsapp.length < 8) return { error: 'El WhatsApp no parece válido.' };
   if (fotos.length > MAX_FOTOS) return { error: `Máximo ${MAX_FOTOS} fotos por aviso.` };
+  const c = limpiarCaracteristicas(categoria, body.caracteristicas);
+  if ('error' in c) return { error: c.error };
 
   return {
-    datos: { categoria, nombre, sector, descripcion, whatsapp, fotos, publicado: body.publicado !== false },
+    datos: {
+      categoria, nombre, sector, descripcion, whatsapp, fotos,
+      caracteristicas: c.caracteristicas,
+      publicado: body.publicado !== false,
+    },
   };
 }
 
