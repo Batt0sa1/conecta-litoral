@@ -1,90 +1,81 @@
 ---
-// Carrusel de portada. Para cambiar o agregar diapositivas, edita `diapositivas`.
-// Las fotos actuales son de 320×320 px, por eso se muestran al lado del texto y no a pantalla completa.
-// Con fotos más grandes (ideal 1600 px de ancho) se puede pasar a un carrusel de ancho completo.
-const base = import.meta.env.BASE_URL;
+// Carrusel de portada.
+// - Las diapositivas predeterminadas (src/data/carrusel.ts) vienen en el HTML.
+// - Si se editó el carrusel desde el panel /admin, se piden a /api/carrusel y reemplazan a las predeterminadas.
+// - Cada foto se muestra completa (object-contain) sobre un fondo desenfocado de sí misma, así sirven
+//   fotos horizontales, verticales y afiches con texto sin recortarlos.
+// - Solo la primera foto se carga al abrir la página; las demás, cuando su diapositiva está por mostrarse.
+import { diapositivasPredeterminadas } from '../data/carrusel';
 
-const diapositivas = [
-  {
-    titulo: 'Conectando ideas, personas y territorios',
-    texto: 'Emprendimiento, servicios y alojamientos del litoral, en un solo lugar y con el respaldo de la fundación.',
-    imagen: 'images/foto-grupal-de-todos-los-fundadores.webp',
-    alt: 'Foto grupal de los fundadores de Conecta Litoral',
-    botones: [
-      { texto: 'Ver Guía del Litoral', href: '#guia', principal: true },
-      { texto: 'Publica tu aviso', href: '#publicar' },
-    ],
-  },
-  {
-    titulo: 'Capacitación y asesorías para emprendedores',
-    texto: 'Charlas, talleres y asesorías profesionales para que tu negocio crezca con una base sólida.',
-    imagen: 'images/persona-hablando-en-charla.webp',
-    alt: 'Charla de capacitación para emprendedores',
-    botones: [
-      { texto: 'Ver asesorías', href: '#asesorias', principal: true },
-      { texto: 'Conversemos', href: '#contacto' },
-    ],
-  },
-  {
-    titulo: 'Una fundación del litoral, para el litoral',
-    texto: 'Conoce quiénes somos, qué hacemos y los valores que guían a nuestra comunidad.',
-    imagen: 'images/foto-de-fundadores.webp',
-    alt: 'Fundadores de Conecta Litoral',
-    botones: [
-      { texto: 'Conoce la fundación', href: '#fundacion', principal: true },
-    ],
-  },
-];
+const base = import.meta.env.BASE_URL;
+const ruta = (img: string) => (img.startsWith('/images/') ? `${base}${img.slice(1)}` : img);
+const total = diapositivasPredeterminadas.length;
 ---
 
 <section id="inicio" class="relative overflow-hidden bg-gradient-to-b from-sky-50 via-white to-white"
-  aria-roledescription="carrusel" aria-label="Destacados de Conecta Litoral">
+  aria-roledescription="carrusel" aria-label="Destacados de Conecta Litoral" data-base={base}>
+  <h1 class="sr-only">Conecta Litoral: Guía del Litoral y fundación para emprendedores de Algarrobo y el litoral</h1>
   <div class="absolute -top-24 -left-24 w-72 h-72 bg-secondary/15 rounded-full" aria-hidden="true"></div>
   <div class="absolute -bottom-32 -right-24 w-96 h-96 bg-lila/10 rounded-full" aria-hidden="true"></div>
 
-  <div class="relative max-w-6xl mx-auto px-4">
+  <div class="relative max-w-6xl mx-auto px-0 sm:px-2">
     <div class="overflow-hidden">
-    <div class="carrusel-pista flex transition-transform duration-700 ease-out motion-reduce:transition-none">
-      {diapositivas.map((d, i) => (
-        <div class="carrusel-diapo w-full shrink-0 py-12 sm:py-16 md:py-20"
-          role="group" aria-roledescription="diapositiva" aria-label={`${i + 1} de ${diapositivas.length}`}
-          aria-hidden={i === 0 ? 'false' : 'true'}>
-          <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-            <div class="order-2 md:order-1 text-center md:text-left">
-              {i === 0
-                ? <h1 class="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-primary leading-tight mb-4">{d.titulo}</h1>
-                : <h2 class="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-primary leading-tight mb-4">{d.titulo}</h2>}
-              <p class="font-body text-base sm:text-lg text-gray-600 mb-8 max-w-xl mx-auto md:mx-0">{d.texto}</p>
-              <div class="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
-                {d.botones.map(b => (
-                  <a href={b.href} tabindex={i === 0 ? undefined : -1}
-                    class={b.principal
-                      ? 'bg-primary text-white font-heading font-semibold px-7 py-3 rounded-full text-base hover:bg-azul transition shadow-sm text-center'
-                      : 'bg-white border-2 border-primary text-primary font-heading font-semibold px-7 py-3 rounded-full text-base hover:bg-primary hover:text-white transition text-center'}>
-                    {b.texto}
+      <div class="carrusel-pista flex transition-[transform,opacity] duration-700 ease-out motion-reduce:transition-none">
+        {diapositivasPredeterminadas.map((d, i) => (
+          <div class="carrusel-diapo w-full shrink-0 flex flex-col justify-center px-5 py-8 sm:py-10"
+            role="group" aria-roledescription="diapositiva" aria-label={`${i + 1} de ${total}`}
+            aria-hidden={i === 0 ? 'false' : 'true'}>
+            {d.titulo ? (
+              <div class="grid md:grid-cols-5 gap-6 md:gap-10 items-center">
+                <div class="md:col-span-2 order-2 md:order-1 text-center md:text-left">
+                  <h2 class="font-heading text-3xl sm:text-4xl font-bold text-primary leading-tight mb-4">{d.titulo}</h2>
+                  {d.texto && <p class="font-body text-base sm:text-lg text-gray-600 mb-6">{d.texto}</p>}
+                  {d.botonTexto && (
+                    <a href={d.botonEnlace} tabindex={i === 0 ? undefined : -1}
+                      class="carrusel-boton inline-block bg-primary text-white font-heading font-semibold px-7 py-3 rounded-full hover:bg-azul transition shadow-sm">
+                      {d.botonTexto}
+                    </a>
+                  )}
+                </div>
+                <div class="md:col-span-3 order-1 md:order-2">
+                  <div class="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-lg bg-sky-100">
+                    <img class="carrusel-fondo absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60" alt="" aria-hidden="true"
+                      data-src={ruta(d.imagen)} src={i === 0 ? ruta(d.imagen) : undefined} />
+                    <img class="carrusel-img relative w-full h-full object-contain" alt={d.alt}
+                      data-src={ruta(d.imagen)} src={i === 0 ? ruta(d.imagen) : undefined}
+                      fetchpriority={i === 0 ? 'high' : undefined} decoding="async" />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div class="flex flex-col items-center gap-6">
+                <div class="relative w-full max-w-5xl aspect-[4/3] sm:aspect-[16/9] rounded-3xl overflow-hidden shadow-lg bg-sky-100">
+                  <img class="carrusel-fondo absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60" alt="" aria-hidden="true"
+                    data-src={ruta(d.imagen)} src={i === 0 ? ruta(d.imagen) : undefined} />
+                  <img class="carrusel-img relative w-full h-full object-contain" alt={d.alt}
+                    data-src={ruta(d.imagen)} src={i === 0 ? ruta(d.imagen) : undefined}
+                    fetchpriority={i === 0 ? 'high' : undefined} decoding="async" />
+                </div>
+                {d.botonTexto && (
+                  <a href={d.botonEnlace} tabindex={i === 0 ? undefined : -1}
+                    class="carrusel-boton inline-block bg-primary text-white font-heading font-semibold px-7 py-3 rounded-full hover:bg-azul transition shadow-sm">
+                    {d.botonTexto}
                   </a>
-                ))}
+                )}
               </div>
-            </div>
-            <div class="order-1 md:order-2 flex justify-center">
-              <div class="relative">
-                <div class="absolute -inset-3 bg-gradient-to-br from-secondary/30 to-lila/30 rounded-[2rem] rotate-3" aria-hidden="true"></div>
-                <img src={`${base}${d.imagen}`} alt={d.alt} width="320" height="320"
-                  loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined}
-                  class="relative w-56 h-56 sm:w-72 sm:h-72 md:w-80 md:h-80 object-cover rounded-3xl shadow-lg" />
-              </div>
-            </div>
+            )}
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+      <!-- Mientras se consulta si hay un carrusel editado desde el panel, se oculta (sin JavaScript se ve normal). -->
+      <script is:inline>document.querySelector('#inicio .carrusel-pista').style.opacity = '0';</script>
     </div>
 
     <!-- Controles -->
-    <div class="flex items-center justify-center gap-4 pb-8">
+    <div class="carrusel-controles flex items-center justify-center gap-4 pb-8">
       <button type="button" class="carrusel-ant w-10 h-10 rounded-full bg-white border border-sky-100 shadow-sm text-primary hover:bg-sky-50 transition" aria-label="Diapositiva anterior">‹</button>
-      <div class="flex gap-2">
-        {diapositivas.map((_, i) => (
+      <div class="carrusel-puntos flex gap-2">
+        {diapositivasPredeterminadas.map((_, i) => (
           <button type="button" class="carrusel-punto w-2.5 h-2.5 rounded-full bg-primary/20 transition-all aria-[current=true]:bg-primary aria-[current=true]:w-7"
             aria-label={`Ir a la diapositiva ${i + 1}`} aria-current={i === 0 ? 'true' : 'false'} data-i={i}></button>
         ))}
@@ -96,22 +87,38 @@ const diapositivas = [
 </section>
 
 <script>
+  import type { Diapositiva } from '../data/carrusel';
+
   const raiz = document.getElementById('inicio')!;
+  const base = raiz.dataset.base || '/';
   const pista = raiz.querySelector<HTMLElement>('.carrusel-pista')!;
-  const diapos = [...raiz.querySelectorAll<HTMLElement>('.carrusel-diapo')];
-  const puntos = [...raiz.querySelectorAll<HTMLButtonElement>('.carrusel-punto')];
+  const contPuntos = raiz.querySelector<HTMLElement>('.carrusel-puntos')!;
+  const controles = raiz.querySelector<HTMLElement>('.carrusel-controles')!;
   const botonPausa = raiz.querySelector<HTMLButtonElement>('.carrusel-pausa')!;
   const INTERVALO = 7000;
   const sinMovimiento = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  let diapos: HTMLElement[] = [];
+  let puntos: HTMLButtonElement[] = [];
   let actual = 0;
   let pausadoPorUsuario = sinMovimiento; // si la persona prefiere menos movimiento, no avanza solo
   let encima = false;
   let temporizador: number | undefined;
 
+  const ruta = (img: string) => (img.startsWith('/images/') ? `${base}${img.slice(1)}` : img);
+
+  /** Pone el `src` a las fotos de una diapositiva (se piden recién cuando hacen falta). */
+  function cargarFotos(i: number) {
+    diapos[(i + diapos.length) % diapos.length]?.querySelectorAll<HTMLImageElement>('img[data-src]').forEach(img => {
+      if (!img.getAttribute('src')) img.src = img.dataset.src!;
+    });
+  }
+
   function ir(i: number) {
     actual = (i + diapos.length) % diapos.length;
     pista.style.transform = `translateX(-${actual * 100}%)`;
+    cargarFotos(actual);
+    cargarFotos(actual + 1); // deja lista la siguiente
     diapos.forEach((d, j) => {
       const visible = j === actual;
       d.setAttribute('aria-hidden', String(!visible));
@@ -133,9 +140,90 @@ const diapositivas = [
     programar();
   }
 
+  /** Toma las diapositivas y puntos que hay en la página y les conecta los eventos. */
+  function vincular() {
+    diapos = [...pista.querySelectorAll<HTMLElement>('.carrusel-diapo')];
+    puntos = [...contPuntos.querySelectorAll<HTMLButtonElement>('.carrusel-punto')];
+    puntos.forEach(p => p.addEventListener('click', () => { ir(Number(p.dataset.i)); programar(); }));
+    controles.classList.toggle('invisible', diapos.length < 2);
+    ir(0);
+    actualizarPausa();
+  }
+
+  // ---------- Diapositivas editadas desde el panel ----------
+
+  function el<K extends keyof HTMLElementTagNameMap>(tag: K, clases = '', texto?: string) {
+    const e = document.createElement(tag);
+    if (clases) e.className = clases;
+    if (texto !== undefined) e.textContent = texto;
+    return e;
+  }
+
+  function marcoImagen(d: Diapositiva, clases: string) {
+    const marco = el('div', `relative rounded-3xl overflow-hidden shadow-lg bg-sky-100 ${clases}`);
+    const fondo = el('img', 'carrusel-fondo absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60');
+    fondo.alt = '';
+    fondo.setAttribute('aria-hidden', 'true');
+    const img = el('img', 'carrusel-img relative w-full h-full object-contain');
+    img.alt = d.alt;
+    img.decoding = 'async';
+    fondo.dataset.src = img.dataset.src = ruta(d.imagen);
+    marco.append(fondo, img);
+    return marco;
+  }
+
+  function boton(d: Diapositiva) {
+    // El enlace ya viene validado por la API (ancla del sitio o http/https); se revisa igual.
+    if (!d.botonTexto || !/^(#[a-z0-9-]+|https?:\/\/)/i.test(d.botonEnlace)) return null;
+    const a = el('a', 'carrusel-boton inline-block bg-primary text-white font-heading font-semibold px-7 py-3 rounded-full hover:bg-azul transition shadow-sm', d.botonTexto);
+    a.href = d.botonEnlace;
+    if (!d.botonEnlace.startsWith('#')) {
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+    }
+    return a;
+  }
+
+  function crearDiapositiva(d: Diapositiva, i: number, total: number) {
+    const diapo = el('div', 'carrusel-diapo w-full shrink-0 flex flex-col justify-center px-5 py-8 sm:py-10');
+    diapo.setAttribute('role', 'group');
+    diapo.setAttribute('aria-roledescription', 'diapositiva');
+    diapo.setAttribute('aria-label', `${i + 1} de ${total}`);
+    const b = boton(d);
+    if (d.titulo) {
+      const grilla = el('div', 'grid md:grid-cols-5 gap-6 md:gap-10 items-center');
+      const textos = el('div', 'md:col-span-2 order-2 md:order-1 text-center md:text-left');
+      textos.append(el('h2', 'font-heading text-3xl sm:text-4xl font-bold text-primary leading-tight mb-4', d.titulo));
+      if (d.texto) textos.append(el('p', 'font-body text-base sm:text-lg text-gray-600 mb-6', d.texto));
+      if (b) textos.append(b);
+      const lado = el('div', 'md:col-span-3 order-1 md:order-2');
+      lado.append(marcoImagen(d, 'aspect-[4/3]'));
+      grilla.append(textos, lado);
+      diapo.append(grilla);
+    } else {
+      const col = el('div', 'flex flex-col items-center gap-6');
+      col.append(marcoImagen(d, 'w-full max-w-5xl aspect-[4/3] sm:aspect-[16/9]'));
+      if (b) col.append(b);
+      diapo.append(col);
+    }
+    return diapo;
+  }
+
+  function montar(lista: Diapositiva[]) {
+    pista.replaceChildren(...lista.map((d, i) => crearDiapositiva(d, i, lista.length)));
+    contPuntos.replaceChildren(...lista.map((_, i) => {
+      const p = el('button', 'carrusel-punto w-2.5 h-2.5 rounded-full bg-primary/20 transition-all aria-[current=true]:bg-primary aria-[current=true]:w-7');
+      p.type = 'button';
+      p.dataset.i = String(i);
+      p.setAttribute('aria-label', `Ir a la diapositiva ${i + 1}`);
+      return p;
+    }));
+  }
+
+  // ---------- Controles ----------
+
   raiz.querySelector('.carrusel-ant')!.addEventListener('click', () => { ir(actual - 1); programar(); });
   raiz.querySelector('.carrusel-sig')!.addEventListener('click', () => { ir(actual + 1); programar(); });
-  puntos.forEach(p => p.addEventListener('click', () => { ir(Number(p.dataset.i)); programar(); }));
   botonPausa.addEventListener('click', () => { pausadoPorUsuario = !pausadoPorUsuario; actualizarPausa(); });
 
   // Se detiene mientras el mouse o el foco del teclado están sobre el carrusel.
@@ -154,6 +242,30 @@ const diapositivas = [
     inicioX = null;
   });
 
-  ir(0);
-  actualizarPausa();
+  // ---------- Inicio ----------
+
+  let mostrado = false;
+  function mostrar() {
+    if (mostrado) return;
+    mostrado = true;
+    pista.style.opacity = '';
+  }
+
+  async function iniciar() {
+    // Si la API tarda, se muestran las predeterminadas igual a los 1,2 s.
+    const espera = setTimeout(mostrar, 1200);
+    try {
+      const res = await fetch('/api/carrusel', { headers: { Accept: 'application/json' } });
+      if (res.ok) {
+        const { diapositivas } = (await res.json()) as { diapositivas: Diapositiva[] | null };
+        if (Array.isArray(diapositivas) && diapositivas.length) montar(diapositivas);
+      }
+    } catch {
+      // Sin API (por ejemplo en `astro dev` o GitHub Pages): quedan las predeterminadas.
+    }
+    clearTimeout(espera);
+    vincular();
+    mostrar();
+  }
+  iniciar();
 </script>
