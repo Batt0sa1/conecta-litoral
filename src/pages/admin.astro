@@ -1,0 +1,484 @@
+---
+// Panel de administración de la Guía del Litoral.
+// Habla con /api/admin/* (Pages Functions en functions/). Ingreso con la contraseña ADMIN_PASSWORD.
+import Layout from '../layouts/Layout.astro';
+import { categorias } from '../data/categorias';
+
+const base = import.meta.env.BASE_URL;
+const campo = 'bg-white border border-sky-200 text-gray-800 placeholder-gray-400 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40';
+const input = `w-full ${campo}`;
+const label = 'block text-azul text-sm font-medium mb-1.5';
+---
+
+<Layout title="Panel · Guía del Litoral" description="Panel de administración de la Guía del Litoral." noindex>
+  <div class="min-h-screen bg-gradient-to-b from-sky-50 to-violet-50">
+    <!-- Ingreso -->
+    <section id="vista-login" class="hidden min-h-screen flex items-center justify-center px-4">
+      <form id="form-login" class="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-sky-100 p-8">
+        <img src={`${base}images/logo.png`} alt="Conecta Litoral" class="h-16 w-auto mx-auto mb-4" />
+        <h1 class="font-heading text-xl font-bold text-primary text-center mb-1">Panel de la Guía</h1>
+        <p class="text-gray-500 text-sm text-center mb-6">Ingresa la contraseña para administrar los avisos.</p>
+        <label for="login-password" class={label}>Contraseña</label>
+        <input id="login-password" type="password" required autocomplete="current-password" class={input} />
+        <p id="login-error" class="hidden mt-3 text-sm text-red-600" role="alert"></p>
+        <button type="submit" class="mt-5 w-full bg-primary text-white font-heading font-semibold py-3 rounded-full hover:bg-azul transition disabled:opacity-60">
+          Entrar
+        </button>
+        <a href={base} class="block text-center text-secondary text-sm mt-4 hover:underline">← Volver al sitio</a>
+      </form>
+    </section>
+
+    <!-- Lista de avisos -->
+    <section id="vista-lista" class="hidden">
+      <header class="bg-white border-b border-sky-100 sticky top-0 z-20">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <img src={`${base}images/logo.png`} alt="" class="h-10 w-auto" />
+            <span class="font-heading font-bold text-primary truncate">Panel de la Guía</span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <a href={`${base}#guia`} target="_blank" class="hidden sm:inline text-sm text-secondary hover:underline">Ver sitio</a>
+            <button id="btn-salir" type="button" class="text-sm text-gray-500 hover:text-primary px-3 py-2">Salir</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="max-w-5xl mx-auto px-4 py-8">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+          <button id="btn-nuevo" type="button" class="bg-primary text-white font-heading font-semibold px-6 py-3 rounded-full hover:bg-azul transition shadow-sm">
+            + Nuevo aviso
+          </button>
+          <div class="flex gap-3 flex-1">
+            <input id="buscar" type="search" placeholder="Buscar por nombre o sector…" class={`${campo} flex-1 min-w-0`} />
+            <select id="filtro-categoria" class={`${campo} w-36 sm:w-56 shrink-0`} aria-label="Filtrar por categoría">
+              <option value="">Todas</option>
+              {categorias.map(c => <option value={c.id}>{c.nombre}</option>)}
+            </select>
+          </div>
+        </div>
+        <p id="resumen" class="text-sm text-gray-500 mb-4"></p>
+        <div id="lista" class="space-y-3"></div>
+        <p id="lista-vacia" class="hidden text-center text-gray-500 bg-white border border-dashed border-sky-200 rounded-2xl py-12 px-4">
+          No hay avisos todavía. Pulsa <strong class="text-primary">+ Nuevo aviso</strong> para crear el primero.
+        </p>
+      </div>
+    </section>
+
+    <!-- Editor -->
+    <section id="vista-editor" class="hidden">
+      <header class="bg-white border-b border-sky-100 sticky top-0 z-20">
+        <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+          <button id="btn-volver" type="button" class="text-sm text-secondary hover:underline">← Volver a la lista</button>
+          <span id="editor-titulo" class="font-heading font-bold text-primary">Nuevo aviso</span>
+        </div>
+      </header>
+
+      <form id="form-editor" class="max-w-3xl mx-auto px-4 py-8 space-y-5" novalidate>
+        <div class="bg-white rounded-2xl border border-sky-100 shadow-sm p-6 space-y-5">
+          <div class="grid sm:grid-cols-2 gap-5">
+            <div>
+              <label for="e-categoria" class={label}>Categoría *</label>
+              <select id="e-categoria" name="categoria" required class={input}>
+                <option value="" disabled selected>Elige una categoría</option>
+                {categorias.map(c => <option value={c.id}>{c.nombre}</option>)}
+              </select>
+            </div>
+            <div>
+              <label for="e-sector" class={label}>Sector / comuna *</label>
+              <input id="e-sector" name="sector" required maxlength="120" placeholder="Ej: Mirasol, Algarrobo" class={input} />
+            </div>
+          </div>
+          <div>
+            <label for="e-nombre" class={label}>Nombre del aviso *</label>
+            <input id="e-nombre" name="nombre" required maxlength="120" placeholder="Ej: Cabaña frente al mar para 4 personas" class={input} />
+          </div>
+          <div>
+            <label for="e-descripcion" class={label}>Descripción *</label>
+            <textarea id="e-descripcion" name="descripcion" required maxlength="2000" rows="5"
+              placeholder="Qué ofrece, capacidad, horarios, precio si corresponde…" class={`${input} resize-y`}></textarea>
+          </div>
+          <div>
+            <label for="e-whatsapp" class={label}>WhatsApp de contacto</label>
+            <input id="e-whatsapp" name="whatsapp" type="tel" maxlength="20" placeholder="+56 9 1234 5678" class={input} />
+            <p class="text-xs text-gray-400 mt-1">Los visitantes verán un botón para escribirle directo. Déjalo vacío si no quieren contacto.</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-sky-100 shadow-sm p-6">
+          <div class="flex items-center justify-between gap-3 mb-1">
+            <h2 class="font-heading font-semibold text-azul">Fotos</h2>
+            <span id="fotos-contador" class="text-xs text-gray-400"></span>
+          </div>
+          <p class="text-xs text-gray-400 mb-4">La primera foto es la portada. Usa las flechas para cambiar el orden.</p>
+          <div id="fotos" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+          <label id="fotos-agregar" class="mt-4 flex items-center justify-center gap-2 border-2 border-dashed border-primary/30 rounded-xl py-6 text-primary font-medium text-sm cursor-pointer hover:bg-primary/5 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+            Agregar fotos
+            <input id="fotos-input" type="file" accept="image/*" multiple class="sr-only" />
+          </label>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-sky-100 shadow-sm p-6">
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input id="e-publicado" type="checkbox" checked class="mt-1 accent-primary w-5 h-5 shrink-0" />
+            <span>
+              <span class="block font-medium text-azul">Publicado</span>
+              <span class="block text-xs text-gray-400">Si lo desmarcas, el aviso queda guardado pero no se ve en el sitio.</span>
+            </span>
+          </label>
+        </div>
+
+        <p id="editor-error" class="hidden text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3" role="alert"></p>
+
+        <div class="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+          <button id="btn-cancelar" type="button" class="px-6 py-3 rounded-full text-gray-500 hover:text-primary">Cancelar</button>
+          <button id="btn-guardar" type="submit" class="bg-primary text-white font-heading font-semibold px-8 py-3 rounded-full hover:bg-azul transition shadow-sm disabled:opacity-60">
+            Guardar aviso
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <div id="aviso-flotante" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-azul text-white text-sm px-5 py-3 rounded-full shadow-lg" role="status"></div>
+  </div>
+</Layout>
+
+<script>
+  import { categorias } from '../data/categorias';
+
+  interface Aviso {
+    id: string;
+    categoria: string;
+    nombre: string;
+    sector: string;
+    descripcion: string;
+    whatsapp: string;
+    fotos: string[];
+    publicado: boolean;
+    actualizado: string;
+  }
+
+  const MAX_FOTOS = 8;
+  const LADO_MAX = 1600; // px: las fotos se achican antes de subirlas
+
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const vistas = { login: $('vista-login'), lista: $('vista-lista'), editor: $('vista-editor') };
+  const nombreCategoria = Object.fromEntries(categorias.map(c => [c.id, c.nombre]));
+
+  let avisos: Aviso[] = [];
+  let editando: Aviso | null = null;
+  let fotos: string[] = [];
+  let subiendo = 0;
+
+  function mostrar(vista: keyof typeof vistas) {
+    Object.entries(vistas).forEach(([k, v]) => v.classList.toggle('hidden', k !== vista));
+    window.scrollTo(0, 0);
+  }
+
+  function notificar(texto: string) {
+    const n = $('aviso-flotante');
+    n.textContent = texto;
+    n.classList.remove('hidden');
+    clearTimeout((n as any)._t);
+    (n as any)._t = setTimeout(() => n.classList.add('hidden'), 3000);
+  }
+
+  function el<K extends keyof HTMLElementTagNameMap>(tag: K, clases = '', texto?: string) {
+    const e = document.createElement(tag);
+    if (clases) e.className = clases;
+    if (texto !== undefined) e.textContent = texto;
+    return e;
+  }
+
+  class SesionExpirada extends Error {}
+
+  async function api<T = any>(ruta: string, opciones: RequestInit = {}): Promise<T> {
+    const headers = new Headers(opciones.headers);
+    headers.set('X-Requested-With', 'panel');
+    if (opciones.body && typeof opciones.body === 'string') headers.set('Content-Type', 'application/json');
+    const res = await fetch(ruta, { ...opciones, headers, credentials: 'same-origin' });
+    const datos = await res.json().catch(() => ({}));
+    if (res.status === 401 && ruta !== '/api/admin/login') {
+      mostrar('login');
+      throw new SesionExpirada(datos.error || 'Tu sesión expiró.');
+    }
+    if (!res.ok) throw new Error(datos.error || `Error ${res.status}. Intenta de nuevo.`);
+    return datos as T;
+  }
+
+  // ---------- Ingreso ----------
+
+  $('form-login').addEventListener('submit', async e => {
+    e.preventDefault();
+    const boton = (e.currentTarget as HTMLFormElement).querySelector('button') as HTMLButtonElement;
+    const error = $('login-error');
+    error.classList.add('hidden');
+    boton.disabled = true;
+    try {
+      await api('/api/admin/login', {
+        method: 'POST',
+        body: JSON.stringify({ password: $<HTMLInputElement>('login-password').value }),
+      });
+      $<HTMLInputElement>('login-password').value = '';
+      await cargarLista();
+    } catch (err) {
+      error.textContent = (err as Error).message;
+      error.classList.remove('hidden');
+    } finally {
+      boton.disabled = false;
+    }
+  });
+
+  $('btn-salir').addEventListener('click', async () => {
+    await api('/api/admin/logout', { method: 'POST' }).catch(() => {});
+    mostrar('login');
+  });
+
+  // ---------- Lista ----------
+
+  async function cargarLista() {
+    avisos = await api<Aviso[]>('/api/admin/avisos');
+    pintarLista();
+    mostrar('lista');
+  }
+
+  function pintarLista() {
+    const q = $<HTMLInputElement>('buscar').value.trim().toLowerCase();
+    const cat = $<HTMLSelectElement>('filtro-categoria').value;
+    const visibles = avisos.filter(a =>
+      (!cat || a.categoria === cat) &&
+      (!q || `${a.nombre} ${a.sector}`.toLowerCase().includes(q)),
+    );
+    const publicados = avisos.filter(a => a.publicado).length;
+    $('resumen').textContent = avisos.length
+      ? `${avisos.length} aviso${avisos.length === 1 ? '' : 's'} · ${publicados} publicado${publicados === 1 ? '' : 's'}`
+      : '';
+    $('lista-vacia').classList.toggle('hidden', avisos.length > 0);
+    $('lista').replaceChildren(...visibles.map(filaAviso));
+    if (avisos.length && !visibles.length) {
+      $('lista').append(el('p', 'text-center text-gray-500 py-8', 'Ningún aviso coincide con la búsqueda.'));
+    }
+  }
+
+  function filaAviso(a: Aviso) {
+    const fila = el('div', 'bg-white rounded-2xl border border-sky-100 shadow-sm p-4 flex flex-col sm:flex-row sm:items-center gap-4');
+    const izq = el('div', 'flex items-center gap-4 min-w-0 flex-1');
+    const miniatura = el('div', 'w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-sky-100 to-violet-100 shrink-0 flex items-center justify-center text-primary/40 text-xs');
+    if (a.fotos[0]) {
+      const img = el('img', 'w-full h-full object-cover');
+      img.src = `/api/fotos/${a.fotos[0]}`;
+      img.alt = '';
+      img.loading = 'lazy';
+      miniatura.append(img);
+    } else {
+      miniatura.textContent = 'Sin foto';
+    }
+    const datos = el('div', 'min-w-0');
+    const estado = el('span',
+      `inline-block text-xs font-medium px-2 py-0.5 rounded-full mb-1 ${a.publicado ? 'bg-secondary/15 text-azul' : 'bg-gray-100 text-gray-500'}`,
+      a.publicado ? 'Publicado' : 'Oculto');
+    datos.append(
+      estado,
+      el('p', 'font-heading font-semibold text-azul truncate', a.nombre),
+      el('p', 'text-xs text-gray-500 truncate', `${nombreCategoria[a.categoria] || a.categoria} · ${a.sector} · ${a.fotos.length} foto${a.fotos.length === 1 ? '' : 's'}`),
+    );
+    izq.append(miniatura, datos);
+
+    const acciones = el('div', 'flex gap-2 shrink-0');
+    const boton = (texto: string, clases: string, accion: () => void) => {
+      const b = el('button', `text-sm font-medium px-4 py-2 rounded-full transition ${clases}`, texto);
+      b.type = 'button';
+      b.addEventListener('click', accion);
+      return b;
+    };
+    acciones.append(
+      boton('Editar', 'bg-primary/10 text-primary hover:bg-primary/20', () => abrirEditor(a)),
+      boton(a.publicado ? 'Ocultar' : 'Publicar', 'bg-sky-50 text-azul hover:bg-sky-100', () => cambiarPublicado(a)),
+      boton('Borrar', 'text-red-500 hover:bg-red-50', () => borrar(a)),
+    );
+    fila.append(izq, acciones);
+    return fila;
+  }
+
+  async function cambiarPublicado(a: Aviso) {
+    try {
+      const nuevo = await api<Aviso>(`/api/admin/avisos/${a.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ ...a, publicado: !a.publicado }),
+      });
+      avisos = avisos.map(x => (x.id === a.id ? nuevo : x));
+      pintarLista();
+      notificar(nuevo.publicado ? 'Aviso publicado.' : 'Aviso oculto.');
+    } catch (err) {
+      if (!(err instanceof SesionExpirada)) alert((err as Error).message);
+    }
+  }
+
+  async function borrar(a: Aviso) {
+    if (!confirm(`¿Borrar el aviso "${a.nombre}"? Se borrarán también sus fotos. Esto no se puede deshacer.`)) return;
+    try {
+      await api(`/api/admin/avisos/${a.id}`, { method: 'DELETE' });
+      avisos = avisos.filter(x => x.id !== a.id);
+      pintarLista();
+      notificar('Aviso borrado.');
+    } catch (err) {
+      if (!(err instanceof SesionExpirada)) alert((err as Error).message);
+    }
+  }
+
+  $('buscar').addEventListener('input', pintarLista);
+  $('filtro-categoria').addEventListener('change', pintarLista);
+  $('btn-nuevo').addEventListener('click', () => abrirEditor(null));
+
+  // ---------- Editor ----------
+
+  const form = $<HTMLFormElement>('form-editor');
+  const campo = (n: string) => form.elements.namedItem(n) as HTMLInputElement;
+
+  function abrirEditor(a: Aviso | null) {
+    editando = a;
+    form.reset();
+    $('editor-error').classList.add('hidden');
+    $('editor-titulo').textContent = a ? 'Editar aviso' : 'Nuevo aviso';
+    campo('categoria').value = a?.categoria || '';
+    campo('sector').value = a?.sector || '';
+    campo('nombre').value = a?.nombre || '';
+    campo('descripcion').value = a?.descripcion || '';
+    campo('whatsapp').value = a?.whatsapp ? `+${a.whatsapp}` : '';
+    $<HTMLInputElement>('e-publicado').checked = a ? a.publicado : true;
+    fotos = a ? [...a.fotos] : [];
+    pintarFotos();
+    mostrar('editor');
+  }
+
+  function cerrarEditor() {
+    if (subiendo > 0 && !confirm('Hay fotos subiéndose. ¿Salir igual?')) return;
+    mostrar('lista');
+  }
+  $('btn-volver').addEventListener('click', cerrarEditor);
+  $('btn-cancelar').addEventListener('click', cerrarEditor);
+
+  function pintarFotos() {
+    const cont = $('fotos');
+    cont.replaceChildren(...fotos.map((id, i) => {
+      const caja = el('div', 'relative aspect-square rounded-xl overflow-hidden bg-sky-50 group');
+      const img = el('img', 'w-full h-full object-cover');
+      img.src = `/api/fotos/${id}`;
+      img.alt = `Foto ${i + 1}`;
+      caja.append(img);
+      if (i === 0) caja.append(el('span', 'absolute top-2 left-2 bg-primary text-white text-[10px] font-semibold px-2 py-0.5 rounded-full', 'Portada'));
+      const barra = el('div', 'absolute bottom-0 inset-x-0 flex justify-between bg-black/45 p-1');
+      const accion = (texto: string, etiqueta: string, fn: () => void, deshabilitado = false) => {
+        const b = el('button', 'w-8 h-8 rounded-full text-white hover:bg-white/20 disabled:opacity-30', texto);
+        b.type = 'button';
+        b.title = etiqueta;
+        b.setAttribute('aria-label', etiqueta);
+        b.disabled = deshabilitado;
+        b.addEventListener('click', fn);
+        return b;
+      };
+      const mover = (d: number) => {
+        [fotos[i], fotos[i + d]] = [fotos[i + d], fotos[i]];
+        pintarFotos();
+      };
+      barra.append(
+        accion('←', 'Mover a la izquierda', () => mover(-1), i === 0),
+        accion('✕', 'Quitar foto', () => { fotos.splice(i, 1); pintarFotos(); }),
+        accion('→', 'Mover a la derecha', () => mover(1), i === fotos.length - 1),
+      );
+      caja.append(barra);
+      return caja;
+    }));
+    for (let i = 0; i < subiendo; i++) {
+      cont.append(el('div', 'aspect-square rounded-xl bg-sky-50 border border-dashed border-sky-200 flex items-center justify-center text-xs text-gray-400 animate-pulse', 'Subiendo…'));
+    }
+    $('fotos-contador').textContent = `${fotos.length} de ${MAX_FOTOS}`;
+    $('fotos-agregar').classList.toggle('hidden', fotos.length + subiendo >= MAX_FOTOS);
+  }
+
+  /** Achica la imagen a LADO_MAX px y la convierte a JPEG para que pese poco. */
+  async function prepararFoto(archivo: File): Promise<Blob> {
+    const bitmap = await createImageBitmap(archivo).catch(() => null);
+    if (!bitmap) throw new Error(`No se pudo leer "${archivo.name}". Prueba con una foto JPG o PNG.`);
+    const escala = Math.min(1, LADO_MAX / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * escala);
+    canvas.height = Math.round(bitmap.height * escala);
+    canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    return new Promise((ok, mal) =>
+      canvas.toBlob(b => (b ? ok(b) : mal(new Error('No se pudo procesar la foto.'))), 'image/jpeg', 0.82),
+    );
+  }
+
+  $<HTMLInputElement>('fotos-input').addEventListener('change', async e => {
+    const input = e.currentTarget as HTMLInputElement;
+    const archivos = [...(input.files || [])].slice(0, MAX_FOTOS - fotos.length - subiendo);
+    input.value = '';
+    await Promise.all(archivos.map(async archivo => {
+      subiendo++;
+      pintarFotos();
+      try {
+        const blob = await prepararFoto(archivo);
+        const { id } = await api<{ id: string }>('/api/admin/fotos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'image/jpeg' },
+          body: blob,
+        });
+        fotos.push(id);
+      } catch (err) {
+        if (!(err instanceof SesionExpirada)) alert((err as Error).message);
+      } finally {
+        subiendo--;
+        pintarFotos();
+      }
+    }));
+  });
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const error = $('editor-error');
+    error.classList.add('hidden');
+    if (subiendo > 0) {
+      error.textContent = 'Espera a que terminen de subirse las fotos.';
+      error.classList.remove('hidden');
+      return;
+    }
+    const datos = {
+      categoria: campo('categoria').value,
+      sector: campo('sector').value,
+      nombre: campo('nombre').value,
+      descripcion: campo('descripcion').value,
+      whatsapp: campo('whatsapp').value,
+      fotos,
+      publicado: $<HTMLInputElement>('e-publicado').checked,
+    };
+    const boton = $<HTMLButtonElement>('btn-guardar');
+    boton.disabled = true;
+    boton.textContent = 'Guardando…';
+    try {
+      const guardado = await api<Aviso>(editando ? `/api/admin/avisos/${editando.id}` : '/api/admin/avisos', {
+        method: editando ? 'PUT' : 'POST',
+        body: JSON.stringify(datos),
+      });
+      avisos = editando ? avisos.map(x => (x.id === guardado.id ? guardado : x)) : [guardado, ...avisos];
+      pintarLista();
+      mostrar('lista');
+      notificar(editando ? 'Cambios guardados.' : 'Aviso creado.');
+    } catch (err) {
+      if (!(err instanceof SesionExpirada)) {
+        error.textContent = (err as Error).message;
+        error.classList.remove('hidden');
+      }
+    } finally {
+      boton.disabled = false;
+      boton.textContent = 'Guardar aviso';
+    }
+  });
+
+  // ---------- Inicio ----------
+
+  fetch('/api/admin/sesion', { credentials: 'same-origin' })
+    .then(r => (r.ok ? cargarLista() : mostrar('login')))
+    .catch(() => mostrar('login'));
+</script>
