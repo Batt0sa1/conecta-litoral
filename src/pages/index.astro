@@ -3,7 +3,6 @@ import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
 import Carrusel from '../components/Carrusel.astro';
 import Categorias from '../components/Categorias.astro';
-import Fundacion from '../components/Fundacion.astro';
 import Guia from '../components/Guia.astro';
 import Asesorias from '../components/Asesorias.astro';
 import Galeria from '../components/Galeria.astro';
@@ -18,7 +17,6 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
     <Carrusel />
     <Categorias />
     <Guia />
-    <Fundacion />
     <Asesorias />
     <Galeria />
     <Contacto />
@@ -26,3 +24,16 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
   <Footer />
   <WhatsAppButton />
 </Layout>
+
+<script is:inline>
+  // Enlaces antiguos a secciones que ahora son páginas propias (ej: /#quienes-somos → /quienes-somos/).
+  (function () {
+    var paginas = { 'quienes-somos': 'quienes-somos', fundacion: 'quienes-somos', 'que-hacemos': 'que-hacemos', pilares: 'pilares', valores: 'valores' };
+    function redirigir() {
+      var destino = paginas[location.hash.slice(1)];
+      if (destino) location.replace(location.pathname.replace(/[^/]*$/, '') + destino + '/');
+    }
+    redirigir();
+    window.addEventListener('hashchange', redirigir);
+  })();
+</script>

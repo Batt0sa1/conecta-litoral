@@ -1,53 +1,84 @@
 ---
+// Menú principal. Los enlaces a secciones de la portada usan `${base}#seccion` para que funcionen
+// también desde las páginas de "La Fundación" (/quienes-somos/, /que-hacemos/, ...).
+import { paginasFundacion } from '../data/paginas';
+
 const base = import.meta.env.BASE_URL;
-const links = [
-  { href: '#guia', label: 'Guía del Litoral' },
-  { href: '#fundacion', label: 'La Fundación' },
-  { href: '#asesorias', label: 'Asesorías' },
-  { href: '#galeria', label: 'Galería' },
-  { href: '#contacto', label: 'Contacto' },
+const ruta = Astro.url.pathname.replace(/\/$/, '');
+const paginas = paginasFundacion.map(p => ({ ...p, href: `${base}${p.slug}/`, actual: ruta.endsWith(`/${p.slug}`) }));
+const enFundacion = paginas.some(p => p.actual);
+
+const antes = [{ href: `${base}#guia`, label: 'Guía del Litoral' }];
+const despues = [
+  { href: `${base}#asesorias`, label: 'Asesorías' },
+  { href: `${base}#galeria`, label: 'Galería' },
+  { href: `${base}#contacto`, label: 'Contacto' },
 ];
+const claseLink = 'text-azul/80 hover:text-primary text-sm font-medium transition-colors';
 ---
 
-<nav class="bg-white/95 backdrop-blur sticky top-0 z-50 shadow-sm border-b border-sky-100">
+<nav class="bg-white/95 backdrop-blur sticky top-0 z-50 shadow-sm border-b border-sky-100" aria-label="Principal">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-    <a href="#inicio" class="flex items-center gap-2">
+    <a href={base} class="flex items-center gap-2">
       <img src={`${base}images/logo.png`} alt="Conecta Litoral" class="h-14 sm:h-16 w-auto" />
       <span class="font-heading text-primary text-lg font-bold hidden sm:block">Conecta Litoral</span>
     </a>
 
-    <!-- Desktop -->
-    <ul class="hidden lg:flex gap-5">
-      {links.map(l => (
-        <li>
-          <a href={l.href} class="text-azul/80 hover:text-primary text-sm font-medium transition-colors">{l.label}</a>
-        </li>
-      ))}
+    <!-- Escritorio -->
+    <ul class="hidden lg:flex items-center gap-6">
+      {antes.map(l => <li><a href={l.href} class={claseLink}>{l.label}</a></li>)}
+      <li class="relative" id="fundacion-menu">
+        <button type="button" id="fundacion-btn" aria-expanded="false" aria-controls="fundacion-lista"
+          class={`inline-flex items-center gap-1 ${claseLink} ${enFundacion ? '!text-primary font-semibold' : ''}`}>
+          La Fundación
+          <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" /></svg>
+        </button>
+        <ul id="fundacion-lista" hidden
+          class="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-56 bg-white rounded-2xl shadow-lg border border-sky-100 p-2">
+          {paginas.map(p => (
+            <li>
+              <a href={p.href} aria-current={p.actual ? 'page' : undefined}
+                class="block px-4 py-2.5 rounded-xl text-sm text-azul hover:bg-sky-50 aria-[current=page]:bg-primary aria-[current=page]:text-white">
+                {p.nombre}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </li>
+      {despues.map(l => <li><a href={l.href} class={claseLink}>{l.label}</a></li>)}
     </ul>
 
-    <a href="#contacto" class="hidden lg:inline-block bg-primary text-white text-sm font-heading font-semibold px-4 py-2 rounded-full hover:bg-azul transition">
+    <a href={`${base}#contacto`} class="hidden lg:inline-block bg-primary text-white text-sm font-heading font-semibold px-4 py-2 rounded-full hover:bg-azul transition">
       Contáctanos
     </a>
 
-    <!-- Hamburger -->
-    <button id="menu-btn" aria-label="Abrir menú" class="lg:hidden text-primary focus:outline-none">
-      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Botón del menú en celulares -->
+    <button id="menu-btn" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-menu" class="lg:hidden text-primary focus:outline-none">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path id="icon-open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
         <path id="icon-close" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
       </svg>
     </button>
   </div>
 
-  <!-- Mobile menu -->
-  <div id="mobile-menu" class="hidden lg:hidden bg-white border-t border-sky-100 px-4 pb-4">
+  <!-- Menú en celulares -->
+  <div id="mobile-menu" class="hidden lg:hidden bg-white border-t border-sky-100 px-4 pb-4 max-h-[calc(100vh-4rem)] overflow-y-auto">
     <ul class="flex flex-col gap-3 pt-3">
-      {links.map(l => (
-        <li>
-          <a href={l.href} class="mobile-link block text-azul/80 hover:text-primary text-sm font-medium transition-colors">{l.label}</a>
-        </li>
-      ))}
+      {antes.map(l => <li><a href={l.href} class={`mobile-link block ${claseLink}`}>{l.label}</a></li>)}
       <li>
-        <a href="#contacto" class="mobile-link block bg-primary text-white text-sm font-heading font-semibold px-4 py-2 rounded-full text-center mt-2 hover:bg-azul transition">
+        <span class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mt-1">La Fundación</span>
+        <ul class="mt-2 ml-3 pl-3 border-l-2 border-sky-100 flex flex-col gap-2.5">
+          {paginas.map(p => (
+            <li>
+              <a href={p.href} aria-current={p.actual ? 'page' : undefined}
+                class={`mobile-link block ${claseLink} aria-[current=page]:text-primary aria-[current=page]:font-semibold`}>{p.nombre}</a>
+            </li>
+          ))}
+        </ul>
+      </li>
+      {despues.map(l => <li><a href={l.href} class={`mobile-link block ${claseLink}`}>{l.label}</a></li>)}
+      <li>
+        <a href={`${base}#contacto`} class="mobile-link block bg-primary text-white text-sm font-heading font-semibold px-4 py-2 rounded-full text-center mt-2 hover:bg-azul transition">
           Contáctanos
         </a>
       </li>
@@ -56,23 +87,38 @@ const links = [
 </nav>
 
 <script>
-  const btn = document.getElementById('menu-btn');
-  const menu = document.getElementById('mobile-menu');
-  const iconOpen = document.getElementById('icon-open');
-  const iconClose = document.getElementById('icon-close');
+  // Menú en celulares
+  const btn = document.getElementById('menu-btn')!;
+  const menu = document.getElementById('mobile-menu')!;
+  const iconOpen = document.getElementById('icon-open')!;
+  const iconClose = document.getElementById('icon-close')!;
 
-  btn?.addEventListener('click', () => {
-    const isOpen = !menu?.classList.contains('hidden');
-    menu?.classList.toggle('hidden', isOpen);
-    iconOpen?.classList.toggle('hidden', !isOpen);
-    iconClose?.classList.toggle('hidden', isOpen);
+  function abrirMenu(abrir: boolean) {
+    menu.classList.toggle('hidden', !abrir);
+    iconOpen.classList.toggle('hidden', abrir);
+    iconClose.classList.toggle('hidden', !abrir);
+    btn.setAttribute('aria-expanded', String(abrir));
+    btn.setAttribute('aria-label', abrir ? 'Cerrar menú' : 'Abrir menú');
+  }
+  btn.addEventListener('click', () => abrirMenu(menu.classList.contains('hidden')));
+  document.querySelectorAll('.mobile-link').forEach(link => link.addEventListener('click', () => abrirMenu(false)));
+
+  // Desplegable "La Fundación" en escritorio: clic, teclado (Escape) y clic afuera para cerrar.
+  const fBtn = document.getElementById('fundacion-btn')!;
+  const fLista = document.getElementById('fundacion-lista')!;
+  const fCaja = document.getElementById('fundacion-menu')!;
+
+  function abrirFundacion(abrir: boolean) {
+    fLista.hidden = !abrir;
+    fBtn.setAttribute('aria-expanded', String(abrir));
+    fBtn.querySelector('svg')!.classList.toggle('rotate-180', abrir);
+  }
+  fBtn.addEventListener('click', () => abrirFundacion(fLista.hidden));
+  document.addEventListener('click', e => { if (!fCaja.contains(e.target as Node)) abrirFundacion(false); });
+  fCaja.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { abrirFundacion(false); fBtn.focus(); }
   });
-
-  document.querySelectorAll('.mobile-link').forEach(link => {
-    link.addEventListener('click', () => {
-      menu?.classList.add('hidden');
-      iconOpen?.classList.remove('hidden');
-      iconClose?.classList.add('hidden');
-    });
+  fCaja.addEventListener('focusout', e => {
+    if (!fCaja.contains(e.relatedTarget as Node)) abrirFundacion(false);
   });
 </script>
