@@ -4,8 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#5B2D8E',
-        secondary: '#00B4C6',
+        primary: '#7B4FC4',   // lila
+        azul: '#1F5FBF',      // azul
+        secondary: '#00A8C6', // celeste
         cta: '#F5C400',
       },
       fontFamily: {
